@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Student Job Prediction
 
-## Getting Started
+This project predicts student job outcome from your employability dataset:
 
-First, run the development server:
+- `Got a Job`
+- `Did Not Get a Job`
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+The web app prediction runs fully in Next.js (no Python required for web usage).
+
+## Files added
+
+- `student_job_predictor.py` - train + interactive prediction script
+- `requirements.txt` - Python dependencies
+
+## Dataset required
+
+Place your CSV file in the project root with this exact name:
+
+`student_employability_60_40.csv`
+
+## Run locally (Windows PowerShell)
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python .\student_job_predictor.py
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Run web app (Next.js form, no Python)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Start the web UI:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```powershell
+npm run dev
+```
 
-## Learn More
+Then open [http://localhost:3000](http://localhost:3000), fill the form, and click **Predict**.
 
-To learn more about Next.js, take a look at the following resources:
+The API route `app/api/predict/route.ts` loads `student_employability_60_40.csv`, uses nearest-neighbor matching, and returns prediction JSON.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Then enter these values when prompted:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Age
+- Gender
+- Department
+- CGPA
+- Programming Languages You Know
+- Approximate Number of Problems Solved on Online Judge Platforms
+- Self-Rated Technical Skill Level (0-5)
+- Communication Skill Level (0-5)
+- Real-World Problem Solving Ability (0-5)
+- Teamwork Ability (0-5)
+- Extra-curricular or technical activities
+- Number of Extra-Curricular Activities
+- Number of Completed Projects
+- Published projects on GitHub/deployed online (Yes/No)
+- Internship Experience (Yes/No)
+- Networking/referral (Yes/No)
+- Skill-development courses outside curriculum
+- Employment aligned with educational background (Yes/No)
 
-## Deploy on Vercel
+## Output
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The script prints:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Predicted job outcome (`Got a Job` or `Did Not Get a Job`)
+- Confidence score for `Got a Job`
