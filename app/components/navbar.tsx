@@ -1,10 +1,10 @@
 import Link from "next/link";
+import { NavbarPredictButton } from "./navbar-predict-button";
 
 const navLinks = [
   { href: "/#how-it-works", label: "How it works" },
   { href: "/#about-us", label: "About" },
   { href: "/#profile-to-prediction", label: "Model & stats" },
-  { href: "/#prediction-form", label: "Predict" },
 ] as const;
 
 export function Navbar() {
@@ -30,6 +30,7 @@ export function Navbar() {
               {label}
             </a>
           ))}
+          <NavbarPredictButton />
         </nav>
       </div>
     </header>

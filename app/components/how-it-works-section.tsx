@@ -1,3 +1,5 @@
+import { OpenPredictionModalButton } from "./open-prediction-modal-button";
+
 export function HowItWorksSection() {
   return (
     <section
@@ -96,12 +98,9 @@ export function HowItWorksSection() {
         >
           See model &amp; data stats
         </a>
-        <a
-          href="#prediction-form"
-          className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
-        >
+        <OpenPredictionModalButton className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">
           Start prediction
-        </a>
+        </OpenPredictionModalButton>
       </div>
     </section>
   );

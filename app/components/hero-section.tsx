@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { OpenPredictionModalButton } from "./open-prediction-modal-button";
 
 const subtitle = "Data-driven career intelligence";
 const title = "Student Job Prediction";
@@ -79,12 +80,9 @@ export function HeroSection() {
             {shortDescription}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <a
-              href="#prediction-form"
-              className="rounded-lg bg-blue-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-900/30 transition hover:bg-blue-400"
-            >
+            <OpenPredictionModalButton className="rounded-lg bg-blue-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-900/30 transition hover:bg-blue-400">
               Start Prediction
-            </a>
+            </OpenPredictionModalButton>
             <a
               href="#about-us"
               className="rounded-lg border border-white/25 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"

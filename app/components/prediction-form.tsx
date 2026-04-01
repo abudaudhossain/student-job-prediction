@@ -1,7 +1,8 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { incrementPredictionCount } from "../lib/prediction-stats";
+import { usePredictionModal } from "./prediction-modal-context";
 
 type PredictionResponse = {
   status: "Got a Job" | "Did Not Get a Job";
@@ -71,11 +72,32 @@ const languageOptions = [
   "Swift",
 ];
 
-export function PredictionForm() {
+export function PredictionFormModal() {
+  const { open, closeModal } = usePredictionModal();
   const [form, setForm] = useState<FormState>(initialForm);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [result, setResult] = useState<PredictionResponse | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") closeModal();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, closeModal]);
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -128,28 +150,60 @@ export function PredictionForm() {
   }
 
   return (
-    <>
-      <section className="mt-8 rounded-xl border border-emerald-200 bg-emerald-50 p-5 dark:border-emerald-900 dark:bg-emerald-950/40">
-        <h2 className="text-lg font-semibold text-emerald-800 dark:text-emerald-300">
-          Related Insights
-        </h2>
-        <p className="mt-2 text-sm leading-6 text-emerald-900/90 dark:text-emerald-200">
-          Placement outcomes are influenced by a combination of academics, consistent
-          skills practice, project depth, and professional exposure. Use this tool as a
-          benchmark, then focus on improving the areas that matter most.
-        </p>
-      </section>
+    <div
+      className={
+        open
+          ? "fixed inset-0 z-100 flex items-end justify-center p-4 sm:items-center"
+          : "hidden"
+      }
+      aria-hidden={!open}
+    >
+      <button
+        type="button"
+        className="absolute inset-0 bg-zinc-950/60 backdrop-blur-[2px] transition-opacity dark:bg-black/70"
+        aria-label="Close prediction form"
+        onClick={closeModal}
+      />
       <div
         id="prediction-form"
-        className="mb-6 mt-8 border-b border-zinc-200 pb-4 dark:border-zinc-800"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="prediction-modal-title"
+        className="relative z-10 flex max-h-[min(90vh,920px)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-700 dark:bg-zinc-900"
       >
-        <h2 className="text-3xl font-bold tracking-tight">Student Job Prediction</h2>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">
-          Enter complete student profile details to predict placement outcome.
-        </p>
-      </div>
+        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-zinc-200 px-5 py-4 dark:border-zinc-700 sm:px-6">
+          <div>
+            <h2
+              id="prediction-modal-title"
+              className="text-xl font-bold tracking-tight sm:text-2xl"
+            >
+              Student Job Prediction
+            </h2>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
+              Enter complete student profile details to predict placement outcome.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={closeModal}
+            className="rounded-lg p-2 text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+            aria-label="Close"
+          >
+            <svg
+              className="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden
+            >
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-      <form className="space-y-6" onSubmit={onSubmit}>
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+          <form className="space-y-6" onSubmit={onSubmit}>
         <section>
           <h2 className="mb-3 text-lg font-semibold">Academic Details</h2>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -423,29 +477,31 @@ export function PredictionForm() {
         </div>
       </form>
 
-      {error && (
-        <p className="mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
-          {error}
-        </p>
-      )}
+          {error && (
+            <p className="mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
+              {error}
+            </p>
+          )}
 
-      {result && (
-        <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-5 dark:border-emerald-900 dark:bg-emerald-950">
-          <p className="text-xl font-bold">Prediction: {result.status}</p>
-          <p className="mt-2 text-sm text-zinc-700 dark:text-zinc-200">
-            Confidence (Got a Job):{" "}
-            <span className="font-semibold">
-              {(result.confidenceGotJob * 100).toFixed(2)}%
-            </span>
-          </p>
-          <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
-            <div
-              className="h-full rounded-full bg-emerald-500 transition-all"
-              style={{ width: `${Math.round(result.confidenceGotJob * 100)}%` }}
-            />
-          </div>
+          {result && (
+            <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-5 dark:border-emerald-900 dark:bg-emerald-950">
+              <p className="text-xl font-bold">Prediction: {result.status}</p>
+              <p className="mt-2 text-sm text-zinc-700 dark:text-zinc-200">
+                Confidence (Got a Job):{" "}
+                <span className="font-semibold">
+                  {(result.confidenceGotJob * 100).toFixed(2)}%
+                </span>
+              </p>
+              <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
+                <div
+                  className="h-full rounded-full bg-emerald-500 transition-all"
+                  style={{ width: `${Math.round(result.confidenceGotJob * 100)}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
-      )}
-    </>
+      </div>
+    </div>
   );
 }

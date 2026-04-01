@@ -1,7 +1,6 @@
 import { HowItWorksSection } from "./components/how-it-works-section";
 import { LandingSections } from "./components/landing-sections";
 import { ProfileToPredictionSection } from "./components/profile-to-prediction-section";
-import { PredictionForm } from "./components/prediction-form";
 
 export default function Home() {
   return (
@@ -9,7 +8,6 @@ export default function Home() {
       <main className="mx-auto w-full max-w-6xl ">
         <LandingSections />
         <ProfileToPredictionSection />
-        <PredictionForm />
         <HowItWorksSection />
       </main>
     </div>
