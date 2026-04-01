@@ -13,7 +13,7 @@ type FormPayload = {
   communicationSkill: string;
   problemSolving: string;
   teamwork: string;
-  activities: string;
+  activities: string | string[];
   numberOfActivities: string;
   completedProjects: string;
   githubOrDeployed: string;
@@ -27,6 +27,9 @@ function mapPayloadToModelInput(payload: FormPayload): Record<string, string> {
   const languageValue = Array.isArray(payload.programmingLanguages)
     ? payload.programmingLanguages.join(", ")
     : payload.programmingLanguages;
+  const activitiesValue = Array.isArray(payload.activities)
+    ? payload.activities.join(", ")
+    : payload.activities;
 
   return {
     Age: payload.age,
@@ -41,7 +44,7 @@ function mapPayloadToModelInput(payload: FormPayload): Record<string, string> {
     "Real-World Problem Solving Ability": payload.problemSolving,
     "Teamwork Ability": payload.teamwork,
     "Which of the following extra-curricular or technical activities have you participated in during your university studies?":
-      payload.activities,
+      activitiesValue,
     "Number of Extra-Curricular Activities": payload.numberOfActivities,
     "Number of Completed Projects": payload.completedProjects,
     "Have you published projects on GitHub or deployed online?":

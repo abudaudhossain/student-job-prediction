@@ -21,7 +21,7 @@ type FormState = {
   communicationSkill: string;
   problemSolving: string;
   teamwork: string;
-  activities: string;
+  activities: string[];
   numberOfActivities: string;
   completedProjects: string;
   githubOrDeployed: string;
@@ -42,7 +42,7 @@ const initialForm: FormState = {
   communicationSkill: "",
   problemSolving: "",
   teamwork: "",
-  activities: "",
+  activities: [],
   numberOfActivities: "",
   completedProjects: "",
   githubOrDeployed: "",
@@ -79,6 +79,19 @@ const languageOptions = [
   "Swift",
 ];
 
+const activityOptions = [
+  "Coding competition",
+  "Hackathon",
+  "Open-source contribution",
+  "Technical club",
+  "Workshop or seminar",
+  "Research project",
+  "Robotics or IoT project",
+  "Volunteer leadership",
+  "Public speaking",
+  "Sports or cultural events",
+];
+
 function validateAcademic(form: FormState): string | null {
   if (!form.age.trim() || !form.gender || !form.department || !form.cgpa.trim()) {
     return "Please complete all academic fields.";
@@ -96,13 +109,15 @@ function validateSkills(form: FormState): string | null {
     "communicationSkill",
     "problemSolving",
     "teamwork",
-    "activities",
   ];
   for (const k of keys) {
     const v = form[k];
     if (typeof v === "string" && !v.trim()) {
       return "Please complete all skills & experience fields.";
     }
+  }
+  if (form.activities.length === 0) {
+    return "Please select at least one activity.";
   }
   return null;
 }
@@ -244,6 +259,18 @@ export function PredictionFormModal() {
         programmingLanguages: exists
           ? prev.programmingLanguages.filter((item) => item !== language)
           : [...prev.programmingLanguages, language],
+      };
+    });
+  }
+
+  function toggleActivity(activity: string) {
+    setForm((prev) => {
+      const exists = prev.activities.includes(activity);
+      return {
+        ...prev,
+        activities: exists
+          ? prev.activities.filter((item) => item !== activity)
+          : [...prev.activities, activity],
       };
     });
   }
@@ -526,12 +553,29 @@ export function PredictionFormModal() {
                     </label>
                     <label className={`${labelClassName} sm:col-span-2`}>
                       Extra-curricular or technical activities
-                      <input
-                        className={inputClassName}
-                        value={form.activities}
-                        onChange={(e) => updateField("activities", e.target.value)}
-                        required
-                      />
+                      <div className="mt-2 flex flex-wrap gap-2 rounded-lg border border-zinc-300 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-800/50">
+                        {activityOptions.map((activity) => {
+                          const active = form.activities.includes(activity);
+                          return (
+                            <button
+                              key={activity}
+                              type="button"
+                              onClick={() => toggleActivity(activity)}
+                              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                                active
+                                  ? "border-indigo-600 bg-indigo-600 text-white"
+                                  : "border-zinc-300 bg-white text-zinc-700 hover:border-indigo-400 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200"
+                              }`}
+                              aria-pressed={active}
+                            >
+                              {activity}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                        Select one or multiple activities.
+                      </p>
                     </label>
                   </div>
                 </section>
