@@ -10,11 +10,13 @@ export function HowItWorksSection() {
         <p className="inline-flex rounded-full border border-indigo-200 bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-indigo-700 dark:border-indigo-800 dark:bg-zinc-900/70 dark:text-indigo-300">
           How it works
         </p>
+
         <h2 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">
-          From your answers to the on-screen forecast
+          From your inputs to an AI-driven placement forecast
         </h2>
+
         <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300 sm:text-base">
-          The flow from your profile to the placement outlook follows four steps.
+          Your profile is transformed through a machine learning pipeline that analyzes key academic, technical, and behavioral signals to estimate your job placement outcome.
         </p>
       </div>
 
@@ -28,15 +30,14 @@ export function HowItWorksSection() {
           </span>
           <div>
             <p className="font-medium text-zinc-900 dark:text-zinc-100">
-              Build your profile
+              Create your profile
             </p>
             <p className="mt-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              You submit CGPA, department, languages, soft skills, projects,
-              internships, and related fields—the same signals stored for past
-              students.
+              Enter your academic performance, technical skills, projects, internships, and extracurricular activities-mirroring real student data used for training.
             </p>
           </div>
         </li>
+
         <li className="flex gap-3">
           <span
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-sm font-bold text-indigo-800 dark:bg-indigo-950 dark:text-indigo-200"
@@ -46,14 +47,14 @@ export function HowItWorksSection() {
           </span>
           <div>
             <p className="font-medium text-zinc-900 dark:text-zinc-100">
-              Preprocess your features
+              Intelligent data preprocessing
             </p>
             <p className="mt-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              The pipeline imputes numeric fields and one-hot encodes categories so
-              your profile matches how the training data was prepared.
+              Your inputs are cleaned and transformed using imputation and encoding techniques, ensuring consistency with the dataset used to train the model.
             </p>
           </div>
         </li>
+
         <li className="flex gap-3">
           <span
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-sm font-bold text-indigo-800 dark:bg-indigo-950 dark:text-indigo-200"
@@ -63,14 +64,14 @@ export function HowItWorksSection() {
           </span>
           <div>
             <p className="font-medium text-zinc-900 dark:text-zinc-100">
-              Run the trained model
+              Machine learning prediction
             </p>
             <p className="mt-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              A Random Forest classifier—fit on the full employability dataset—reads
-              your processed features and outputs a placement class.
+              A trained Random Forest model analyzes your profile and identifies patterns from past student outcomes to predict your placement probability.
             </p>
           </div>
         </li>
+
         <li className="flex gap-3">
           <span
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-sm font-bold text-indigo-800 dark:bg-indigo-950 dark:text-indigo-200"
@@ -80,15 +81,10 @@ export function HowItWorksSection() {
           </span>
           <div>
             <p className="font-medium text-zinc-900 dark:text-zinc-100">
-              Class and confidence
+              Result with confidence score
             </p>
             <p className="mt-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              The UI shows the predicted label and the model&apos;s estimated
-              probability of &quot;Got a job&quot; from{" "}
-              <code className="rounded bg-zinc-100 px-1 text-xs dark:bg-zinc-800">
-                predict_proba
-              </code>
-              .
+              You receive a predicted outcome along with a confidence score, indicating how strongly the model estimates your chances of getting a job.
             </p>
           </div>
         </li>

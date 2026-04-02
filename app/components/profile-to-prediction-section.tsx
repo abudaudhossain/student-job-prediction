@@ -21,7 +21,7 @@ export function ProfileToPredictionSection() {
     modelAccuracyPercent: 93.96,
     featureCount: 18,
   });
-  
+
   const [predictionCount, setPredictionCount] = useState(0);
 
   const refreshPredictionCount = useCallback(() => {
@@ -49,14 +49,23 @@ export function ProfileToPredictionSection() {
         <p className="inline-flex rounded-full border border-indigo-200 bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-indigo-700 dark:border-indigo-800 dark:bg-zinc-900/70 dark:text-indigo-300">
           Profile → Prediction
         </p>
+
         <h2 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">
-          From your profile to a data-backed placement forecast
+          Turn your profile into an AI-powered placement prediction
         </h2>
+
         <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300 sm:text-base">
-          You enter academic and skills signals; predictions use your personal Python
-          model (scikit-learn Random Forest pipeline) trained on historical outcomes.
-          Below are a quality signal for that model, how many predictions have been run
-          in this browser, and how many real student records power the baseline.
+          Provide your academic background, technical skills, and real-world experience to receive a personalized job placement prediction.
+          This system uses a machine learning model (Random Forest pipeline) trained on historical student outcomes to estimate your chances of getting a job.
+        </p>
+
+        <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300 sm:text-base">
+          The prediction is based on key factors such as CGPA, problem-solving ability, projects, internships, and skill development activities.
+          You’ll also see a confidence score indicating how strongly the model believes in the prediction.
+        </p>
+
+        <p className="mt-3 text-sm leading-6 text-zinc-500 dark:text-zinc-400 sm:text-sm">
+          ⚠️ Note: This is an AI-based estimation, not a guarantee. Use it as a guidance tool to identify areas for improvement and increase your employability.
         </p>
       </div>
 

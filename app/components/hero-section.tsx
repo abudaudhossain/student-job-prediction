@@ -7,7 +7,7 @@ import { OpenPredictionModalButton } from "./open-prediction-modal-button";
 const subtitle = "Data-driven career intelligence";
 const title = "Student Job Prediction";
 const shortDescription =
-  "Connect your academic profile, technical skills, and real-world readiness to a clear placement outlook—grounded in historical outcomes, not guesswork.";
+  "Connect your academic profile, technical skills, and real-world readiness to a clear placement outlook-grounded in historical outcomes, not guesswork.";
 
 const slides = [
   {
