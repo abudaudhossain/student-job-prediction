@@ -141,6 +141,39 @@ function validateProjects(form: FormState): string | null {
   return null;
 }
 
+const DEFAULT_PREDICT_API_URL =
+  "https://student-job-predition-server.onrender.com/predict";
+
+function predictApiUrl(): string {
+  const fromEnv = process.env.NEXT_PUBLIC_PREDICT_API_URL?.trim();
+  return fromEnv && fromEnv.length > 0 ? fromEnv : DEFAULT_PREDICT_API_URL;
+}
+
+/** Body shape expected by the external prediction server. */
+function formToPredictApiBody(form: FormState) {
+  const lower = (v: string) => v.trim().toLowerCase();
+  return {
+    department: form.department.trim(),
+    age: Number(form.age),
+    cgpa: Number(form.cgpa),
+    problems_solved: Number(form.solvedProblems),
+    technical_skill: Number(form.technicalSkill),
+    communication_skill: Number(form.communicationSkill),
+    problem_solving_ability: Number(form.problemSolving),
+    teamwork: Number(form.teamwork),
+    extra_activities: Number(form.numberOfActivities),
+    projects_completed: Number(form.completedProjects),
+    internship_experience: lower(form.internshipExperience),
+    gender: lower(form.gender),
+    completed_extra_courses: Number(form.skillCourses),
+    published_projects: lower(form.githubOrDeployed),
+    job_by_referral: lower(form.networkingOrReferral),
+    education_aligned_job: lower(form.jobAlignsWithEducation),
+    programming_languages: form.programmingLanguages.join(", "),
+    activities: form.activities.join(", "),
+  };
+}
+
 export function PredictionFormModal() {
   const { open, closeModal } = usePredictionModal();
   const [step, setStep] = useState(0);
@@ -198,19 +231,47 @@ export function PredictionFormModal() {
     setResult(null);
 
     try {
-      const response = await fetch("/api/predict", {
+      
+      const response = await fetch(predictApiUrl(), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(formToPredictApiBody(form)),
       });
 
-      const data = (await response.json()) as PredictionResponse | { error: string };
-
-      if (!response.ok || "error" in data) {
-        throw new Error("error" in data ? data.error : "Prediction failed.");
+      let raw: Record<string, unknown>;
+      try {
+        raw = (await response.json()) as Record<string, unknown>;
+      } catch {
+        throw new Error(
+          response.ok
+            ? "Invalid response from prediction service."
+            : `Prediction service returned ${response.status}.`,
+        );
       }
 
-      setResult(data);
+      if (!response.ok) {
+        const msg =
+          typeof raw.error === "string"
+            ? raw.error
+            : typeof raw.detail === "string"
+              ? raw.detail
+              : `Prediction failed (${response.status}).`;
+        throw new Error(msg);
+      }
+
+      const confidenceGotJob =
+        typeof raw.confidenceGotJob === "number"
+          ? raw.confidenceGotJob
+          : typeof raw.confidence === "number"
+            ? raw.confidence
+            : 0;
+
+      const status: PredictionResponse["status"] =
+        raw.status === "Got a Job" || raw.status === "Did Not Get a Job"
+          ? raw.status
+          : "Did Not Get a Job";
+
+      setResult({ status, confidenceGotJob });
       incrementPredictionCount();
     } catch (submitError) {
       const message =
