@@ -52,7 +52,7 @@ export function Footer() {
             </ul>
             <div className="mt-4 flex flex-wrap items-center gap-4">
               <a
-                href="#"
+                href="https://github.com/abudaudhossain/student-job-prediction"
                 className="inline-flex items-center gap-1.5 text-xs text-zinc-500 transition hover:text-indigo-600 dark:text-zinc-400 dark:hover:text-indigo-400"
                 aria-label="GitHub"
               >
@@ -71,7 +71,7 @@ export function Footer() {
                 GitHub
               </a>
               <a
-                href="#"
+                href="https://www.linkedin.com/in/abudauddev/"
                 className="inline-flex items-center gap-1.5 text-xs text-zinc-500 transition hover:text-indigo-600 dark:text-zinc-400 dark:hover:text-indigo-400"
                 aria-label="LinkedIn"
               >
