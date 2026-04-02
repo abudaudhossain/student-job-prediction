@@ -7,7 +7,6 @@ type StatsResponse = {
   datasetRows: number;
   modelAccuracyPercent: number;
   featureCount: number;
-  kNeighbors: number;
 };
 
 function formatCount(n: number): string {
@@ -17,8 +16,12 @@ function formatCount(n: number): string {
 }
 
 export function ProfileToPredictionSection() {
-  const [stats, setStats] = useState<StatsResponse | null>(null);
-  const [statsError, setStatsError] = useState<string>("");
+  const [stats, setStats] = useState<StatsResponse | null>({
+    datasetRows: 100000,
+    modelAccuracyPercent: 93.96,
+    featureCount: 18,
+  });
+  
   const [predictionCount, setPredictionCount] = useState(0);
 
   const refreshPredictionCount = useCallback(() => {
@@ -35,26 +38,7 @@ export function ProfileToPredictionSection() {
     };
   }, [refreshPredictionCount]);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/stats");
-        const data = (await res.json()) as StatsResponse | { error: string };
-        if (!res.ok || "error" in data) {
-          throw new Error("error" in data ? data.error : "Failed to load stats.");
-        }
-        if (!cancelled) setStats(data);
-      } catch (e) {
-        if (!cancelled) {
-          setStatsError(e instanceof Error ? e.message : "Could not load dataset stats.");
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const statsError = `Rows in the training set with ${stats?.featureCount ?? 18} profile features each.`;
 
   return (
     <section
@@ -69,10 +53,10 @@ export function ProfileToPredictionSection() {
           From your profile to a data-backed placement forecast
         </h2>
         <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300 sm:text-base">
-          You enter academic and skills signals; the model compares them to historical
-          outcomes using k-nearest neighbors. Below are the model quality signal, how
-          many predictions have been run in this browser, and how many real student
-          records power the baseline.
+          You enter academic and skills signals; predictions use your personal Python
+          model (scikit-learn Random Forest pipeline) trained on historical outcomes.
+          Below are a quality signal for that model, how many predictions have been run
+          in this browser, and how many real student records power the baseline.
         </p>
       </div>
 
@@ -85,8 +69,8 @@ export function ProfileToPredictionSection() {
             Model accuracy
           </p>
           <p className="mt-2 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
-            Validation-style score for k-NN (k=
-            {stats?.kNeighbors ?? "—"}) on employability labels.
+            Validation-style accuracy for your personal Random Forest model on
+            employability labels.
           </p>
         </div>
 
@@ -110,9 +94,7 @@ export function ProfileToPredictionSection() {
             Data used
           </p>
           <p className="mt-2 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
-            {statsError
-              ? statsError
-              : `Rows in the training set with ${stats?.featureCount ?? 18} profile features each.`}
+            {statsError}
           </p>
         </div>
       </div>

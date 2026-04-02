@@ -46,11 +46,11 @@ export function HowItWorksSection() {
           </span>
           <div>
             <p className="font-medium text-zinc-900 dark:text-zinc-100">
-              Compare every feature
+              Preprocess your features
             </p>
             <p className="mt-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              Numeric fields use scaled distance; categorical fields match or
-              differ. Those differences are averaged across all profile dimensions.
+              The pipeline imputes numeric fields and one-hot encodes categories so
+              your profile matches how the training data was prepared.
             </p>
           </div>
         </li>
@@ -63,11 +63,11 @@ export function HowItWorksSection() {
           </span>
           <div>
             <p className="font-medium text-zinc-900 dark:text-zinc-100">
-              Find nearest neighbors
+              Run the trained model
             </p>
             <p className="mt-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              The dataset rows closest to your profile are selected (k-nearest
-              neighbors). Their recorded job outcomes are what the model leans on.
+              A Random Forest classifier—fit on the full employability dataset—reads
+              your processed features and outputs a placement class.
             </p>
           </div>
         </li>
@@ -80,12 +80,15 @@ export function HowItWorksSection() {
           </span>
           <div>
             <p className="font-medium text-zinc-900 dark:text-zinc-100">
-              Vote and confidence
+              Class and confidence
             </p>
             <p className="mt-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              Labels among those neighbors are tallied. The predicted class is the
-              majority; the confidence bar reflects the fraction voting &quot;Got a
-              job.&quot;
+              The UI shows the predicted label and the model&apos;s estimated
+              probability of &quot;Got a job&quot; from{" "}
+              <code className="rounded bg-zinc-100 px-1 text-xs dark:bg-zinc-800">
+                predict_proba
+              </code>
+              .
             </p>
           </div>
         </li>
