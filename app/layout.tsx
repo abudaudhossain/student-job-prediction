@@ -4,6 +4,7 @@ import { Footer } from "./components/footer";
 import { Navbar } from "./components/navbar";
 import { PredictionFormModal } from "./components/prediction-form";
 import { PredictionModalProvider } from "./components/prediction-modal-context";
+import { Analytics } from "@vercel/analytics/next"
 import "./globals.css";
 
 const geistSans = Geist({
@@ -39,6 +40,7 @@ export default function RootLayout({
           <Footer />
           <PredictionFormModal />
         </PredictionModalProvider>
+        <Analytics />
       </body>
     </html>
   );
