@@ -4,6 +4,7 @@ import { Footer } from "./components/footer";
 import { Navbar } from "./components/navbar";
 import { PredictionFormModal } from "./components/prediction-form";
 import { PredictionModalProvider } from "./components/prediction-modal-context";
+import { PredictServerWarmup } from "./components/predict-server-warmup";
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css";
 
@@ -34,6 +35,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-screen flex-col">
+        <PredictServerWarmup />
         <PredictionModalProvider>
           <Navbar />
           <div className="flex flex-1 flex-col">{children}</div>

@@ -28,6 +28,7 @@ export function PredictionModalProvider({
   const [open, setOpen] = useState(false);
 
   const openModal = useCallback(() => {
+    void fetch("https://student-job-predition-server.onrender.com", { method: "GET" }).catch(() => {});
     setOpen(true);
     if (typeof window !== "undefined" && window.location.hash !== HASH) {
       window.history.replaceState(
