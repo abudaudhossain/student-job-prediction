@@ -8,8 +8,8 @@ import { useEffect } from "react";
  */
 export function PredictServerWarmup() {
   useEffect(() => {
+    // void fetch("https://student-job-predition-server.onrender.com", { method: "GET" }).catch(() => {});
     void fetch("/api/ping-predict-server", { method: "GET" }).catch(() => {});
-    void fetch("https://student-job-predition-server.onrender.com", { method: "GET" }).catch(() => {});
   }, []);
 
   return null;
