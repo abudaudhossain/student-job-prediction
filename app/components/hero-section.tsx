@@ -69,7 +69,7 @@ export function HeroSection() {
       </div>
 
       <div className="relative z-10 px-6 py-14 sm:px-10 sm:py-20 lg:py-24">
-        <div className="mx-auto max-w-2xl">
+        <div className="mx-auto">
           <p className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-100 backdrop-blur-sm">
             {subtitle}
           </p>
