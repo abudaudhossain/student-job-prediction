@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useRef, useState } from "react";
 import { incrementPredictionCount } from "../lib/prediction-stats";
 import { PredictionFormLoader } from "./prediction-form-loader";
 import { usePredictionModal } from "./prediction-modal-context";
@@ -11,135 +11,161 @@ type PredictionResponse = {
 };
 
 type FormState = {
-  age: string;
-  gender: string;
-  department: string;
   cgpa: string;
-  programmingLanguages: string[];
-  solvedProblems: string;
-  technicalSkill: string;
-  communicationSkill: string;
-  problemSolving: string;
-  teamwork: string;
-  activities: string[];
-  numberOfActivities: string;
-  completedProjects: string;
-  githubOrDeployed: string;
-  internshipExperience: string;
-  networkingOrReferral: string;
-  skillCourses: string;
-  jobAlignsWithEducation: string;
+  department: string;
+  programming_skill_score: string;
+  problem_solving_score: string;
+  database_skill_score: string;
+  coding_contest_rating: string;
+  coding_contest_platform: string;
+  internships_count: string;
+  hackathons_participated: string;
+  freelance_experience: string;
+  certifications_count: string;
+  projects_count: string;
+  github_repos: string;
+  communication_skill_score: string;
+  teamwork_score: string;
+  leadership_score: string;
+  extracurricular_score: string;
+  presentation_skill_score: string;
+  learning_consistency_score: string;
+  aptitude_test_score: string;
+  mock_interview_score: string;
+  resume_quality_score: string;
 };
 
 const initialForm: FormState = {
-  age: "",
-  gender: "",
-  department: "",
   cgpa: "",
-  programmingLanguages: [],
-  solvedProblems: "",
-  technicalSkill: "",
-  communicationSkill: "",
-  problemSolving: "",
-  teamwork: "",
-  activities: [],
-  numberOfActivities: "",
-  completedProjects: "",
-  githubOrDeployed: "",
-  internshipExperience: "",
-  networkingOrReferral: "",
-  skillCourses: "",
-  jobAlignsWithEducation: "",
+  department: "",
+  programming_skill_score: "",
+  problem_solving_score: "",
+  database_skill_score: "",
+  coding_contest_rating: "",
+  coding_contest_platform: "",
+  internships_count: "",
+  hackathons_participated: "",
+  freelance_experience: "",
+  certifications_count: "",
+  projects_count: "",
+  github_repos: "",
+  communication_skill_score: "",
+  teamwork_score: "",
+  leadership_score: "",
+  extracurricular_score: "",
+  presentation_skill_score: "",
+  learning_consistency_score: "",
+  aptitude_test_score: "",
+  mock_interview_score: "",
+  resume_quality_score: "",
 };
 
 const STEPS = [
-  { id: 0, title: "Academic details", short: "Profile & CGPA" },
-  { id: 1, title: "Skills & experience", short: "Languages & soft skills" },
-  { id: 2, title: "Projects & placement", short: "Projects & context" },
+  { id: 0, title: "Academic details", short: "CGPA & dept" },
+  { id: 1, title: "Technical skills", short: "Coding & DB" },
+  { id: 2, title: "Experience", short: "Projects & work" },
+  { id: 3, title: "Soft skills & assessment", short: "Scores" },
 ] as const;
+
+const LAST_STEP = STEPS.length - 1;
 
 const inputClassName =
   "mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-zinc-700 dark:bg-zinc-800 dark:focus:ring-blue-900";
 
 const labelClassName = "text-sm font-medium text-zinc-700 dark:text-zinc-200";
 
-const languageOptions = [
-  "Python",
-  "Java",
-  "JavaScript",
-  "TypeScript",
-  "C",
-  "C++",
-  "C#",
-  "Go",
-  "PHP",
-  "R",
-  "SQL",
-  "Kotlin",
-  "Swift",
-];
-
-const activityOptions = [
-  "Coding competition",
-  "Hackathon",
-  "Open-source contribution",
-  "Technical club",
-  "Workshop or seminar",
-  "Research project",
-  "Robotics or IoT project",
-  "Volunteer leadership",
-  "Public speaking",
-  "Sports or cultural events",
-];
-
-function validateAcademic(form: FormState): string | null {
-  if (!form.age.trim() || !form.gender || !form.department || !form.cgpa.trim()) {
-    return "Please complete all academic fields.";
-  }
-  return null;
+function RequiredMark() {
+  return (
+    <abbr
+      className="inline-flex text-base leading-none text-red-500 no-underline"
+      title="Required"
+      aria-label="required"
+    >
+      *
+    </abbr>
+  );
 }
 
-function validateSkills(form: FormState): string | null {
-  if (form.programmingLanguages.length === 0) {
-    return "Please select at least one programming language.";
-  }
-  const keys: (keyof FormState)[] = [
-    "solvedProblems",
-    "technicalSkill",
-    "communicationSkill",
-    "problemSolving",
-    "teamwork",
-  ];
-  for (const k of keys) {
-    const v = form[k];
-    if (typeof v === "string" && !v.trim()) {
-      return "Please complete all skills & experience fields.";
-    }
-  }
-  if (form.activities.length === 0) {
-    return "Please select at least one activity.";
-  }
-  return null;
+function FormLabel({
+  text,
+  children,
+  className = labelClassName,
+}: {
+  text: string;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <label className={className}>
+      <span className="inline-flex items-center gap-1">
+        {text}
+        <RequiredMark />
+      </span>
+      {children}
+    </label>
+  );
 }
 
-function validateProjects(form: FormState): string | null {
-  const keys: (keyof FormState)[] = [
-    "numberOfActivities",
-    "completedProjects",
-    "githubOrDeployed",
-    "internshipExperience",
-    "networkingOrReferral",
-    "skillCourses",
-    "jobAlignsWithEducation",
-  ];
-  for (const k of keys) {
-    const v = form[k];
-    if (typeof v === "string" && !String(v).trim()) {
-      return "Please complete all projects & placement fields.";
+const departmentOptions = [
+  "CSE",
+  "EEE",
+  "B.B.A",
+  "Civil",
+  "English",
+  "Pharmacy",
+];
+
+const contestPlatformOptions = [
+  "Codeforces",
+  "CodeChef",
+  "LeetCode",
+  "HackerRank",
+  "None",
+];
+
+function validateRequiredFields(
+  form: FormState,
+  keys: (keyof FormState)[],
+  message: string,
+): string | null {
+  for (const key of keys) {
+    if (!form[key].trim()) {
+      return message;
     }
   }
   return null;
 }
+
+const academicFields: (keyof FormState)[] = ["cgpa", "department"];
+
+const technicalFields: (keyof FormState)[] = [
+  "programming_skill_score",
+  "problem_solving_score",
+  "database_skill_score",
+  "coding_contest_rating",
+  "coding_contest_platform",
+  "learning_consistency_score",
+];
+
+const experienceFields: (keyof FormState)[] = [
+  "internships_count",
+  "hackathons_participated",
+  "freelance_experience",
+  "certifications_count",
+  "projects_count",
+  "github_repos",
+];
+
+const assessmentFields: (keyof FormState)[] = [
+  "communication_skill_score",
+  "teamwork_score",
+  "leadership_score",
+  "extracurricular_score",
+  "presentation_skill_score",
+  "aptitude_test_score",
+  "mock_interview_score",
+  "resume_quality_score",
+];
 
 const DEFAULT_PREDICT_API_URL =
   "https://student-job-predition-server.onrender.com/predict";
@@ -151,27 +177,61 @@ function predictApiUrl(): string {
 
 /** Body shape expected by the external prediction server. */
 function formToPredictApiBody(form: FormState) {
-  const lower = (v: string) => v.trim().toLowerCase();
   return {
-    department: form.department.trim(),
-    age: Number(form.age),
     cgpa: Number(form.cgpa),
-    problems_solved: Number(form.solvedProblems),
-    technical_skill: Number(form.technicalSkill),
-    communication_skill: Number(form.communicationSkill),
-    problem_solving_ability: Number(form.problemSolving),
-    teamwork: Number(form.teamwork),
-    extra_activities: Number(form.numberOfActivities),
-    projects_completed: Number(form.completedProjects),
-    internship_experience: lower(form.internshipExperience),
-    gender: lower(form.gender),
-    completed_extra_courses: Number(form.skillCourses),
-    published_projects: lower(form.githubOrDeployed),
-    job_by_referral: lower(form.networkingOrReferral),
-    education_aligned_job: lower(form.jobAlignsWithEducation),
-    programming_languages: form.programmingLanguages.join(", "),
-    activities: form.activities.join(", "),
+    department: form.department.trim(),
+    programming_skill_score: Number(form.programming_skill_score),
+    problem_solving_score: Number(form.problem_solving_score),
+    database_skill_score: Number(form.database_skill_score),
+    coding_contest_rating: Number(form.coding_contest_rating),
+    coding_contest_platform: form.coding_contest_platform.trim(),
+    internships_count: Number(form.internships_count),
+    hackathons_participated: Number(form.hackathons_participated),
+    freelance_experience: Number(form.freelance_experience),
+    certifications_count: Number(form.certifications_count),
+    projects_count: Number(form.projects_count),
+    github_repos: Number(form.github_repos),
+    communication_skill_score: Number(form.communication_skill_score),
+    teamwork_score: Number(form.teamwork_score),
+    learning_consistency_score: Number(form.learning_consistency_score),
+    aptitude_test_score: Number(form.aptitude_test_score),
+    mock_interview_score: Number(form.mock_interview_score),
+    resume_quality_score: Number(form.resume_quality_score),
+    leadership_score: Number(form.leadership_score),
+    extracurricular_score: Number(form.extracurricular_score),
+    presentation_skill_score: Number(form.presentation_skill_score),
   };
+}
+
+function stepValidators(step: number, form: FormState): string | null {
+  switch (step) {
+    case 0:
+      return validateRequiredFields(
+        form,
+        academicFields,
+        "Please complete all academic fields.",
+      );
+    case 1:
+      return validateRequiredFields(
+        form,
+        technicalFields,
+        "Please complete all technical skill fields.",
+      );
+    case 2:
+      return validateRequiredFields(
+        form,
+        experienceFields,
+        "Please complete all experience fields.",
+      );
+    case 3:
+      return validateRequiredFields(
+        form,
+        assessmentFields,
+        "Please complete all soft skills & assessment fields.",
+      );
+    default:
+      return null;
+  }
 }
 
 export function PredictionFormModal() {
@@ -210,28 +270,22 @@ export function PredictionFormModal() {
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    // Ref avoids stale step if Enter triggers submit in the same tick as navigation.
-    if (stepRef.current !== 2) return;
-    const langErr = validateSkills(form);
-    if (langErr) {
-      setError(langErr);
-      return;
+    if (stepRef.current !== LAST_STEP) return;
+
+    for (let i = 0; i <= LAST_STEP; i++) {
+      const err = stepValidators(i, form);
+      if (err) {
+        setError(err);
+        setStep(i);
+        return;
+      }
     }
-    if (form.programmingLanguages.length === 0) {
-      setError("Please select at least one programming language.");
-      return;
-    }
-    const projectErr = validateProjects(form);
-    if (projectErr) {
-      setError(projectErr);
-      return;
-    }
+
     setLoading(true);
     setError("");
     setResult(null);
 
     try {
-      
       const response = await fetch(predictApiUrl(), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -284,22 +338,13 @@ export function PredictionFormModal() {
 
   function goNext() {
     setError("");
-    if (step === 0) {
-      const err = validateAcademic(form);
-      if (err) {
-        setError(err);
-        return;
-      }
-      setStep(1);
+    const err = stepValidators(step, form);
+    if (err) {
+      setError(err);
       return;
     }
-    if (step === 1) {
-      const err = validateSkills(form);
-      if (err) {
-        setError(err);
-        return;
-      }
-      setStep(2);
+    if (step < LAST_STEP) {
+      setStep((s) => s + 1);
     }
   }
 
@@ -310,30 +355,6 @@ export function PredictionFormModal() {
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
-  }
-
-  function toggleLanguage(language: string) {
-    setForm((prev) => {
-      const exists = prev.programmingLanguages.includes(language);
-      return {
-        ...prev,
-        programmingLanguages: exists
-          ? prev.programmingLanguages.filter((item) => item !== language)
-          : [...prev.programmingLanguages, language],
-      };
-    });
-  }
-
-  function toggleActivity(activity: string) {
-    setForm((prev) => {
-      const exists = prev.activities.includes(activity);
-      return {
-        ...prev,
-        activities: exists
-          ? prev.activities.filter((item) => item !== activity)
-          : [...prev.activities, activity],
-      };
-    });
   }
 
   const progressPct = ((step + 1) / STEPS.length) * 100;
@@ -448,7 +469,7 @@ export function PredictionFormModal() {
               noValidate
               onKeyDown={(e) => {
                 if (e.key !== "Enter") return;
-                if (stepRef.current >= 2) return;
+                if (stepRef.current >= LAST_STEP) return;
                 const el = e.target as HTMLElement;
                 if (el.tagName === "BUTTON" || el.tagName === "TEXTAREA") return;
                 e.preventDefault();
@@ -460,33 +481,20 @@ export function PredictionFormModal() {
                     Academic details
                   </h3>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <label className={labelClassName}>
-                      Age
+                    <FormLabel text="CGPA (0–4)">
                       <input
                         className={inputClassName}
                         type="number"
-                        min={16}
-                        max={60}
-                        value={form.age}
-                        onChange={(e) => updateField("age", e.target.value)}
+                        step="0.01"
+                        min={0}
+                        max={4}
+                        placeholder="e.g. 3.75"
+                        value={form.cgpa}
+                        onChange={(e) => updateField("cgpa", e.target.value)}
                         required
                       />
-                    </label>
-                    <label className={labelClassName}>
-                      Gender
-                      <select
-                        className={inputClassName}
-                        value={form.gender}
-                        onChange={(e) => updateField("gender", e.target.value)}
-                        required
-                      >
-                        <option value="">Select gender</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                      </select>
-                    </label>
-                    <label className={labelClassName}>
-                      Department
+                    </FormLabel>
+                    <FormLabel text="Department">
                       <select
                         className={inputClassName}
                         value={form.department}
@@ -494,305 +502,367 @@ export function PredictionFormModal() {
                         required
                       >
                         <option value="">Select department</option>
-                        <option value="CSE">CSE</option>
-                        <option value="IT">IT</option>
-                        <option value="SWE">SWE</option>
-                        <option value="EEE">EEE</option>
-                        <option value="Management">Management</option>
-                        <option value="BBA">BBA</option>
+                        {departmentOptions.map((dept) => (
+                          <option key={dept} value={dept}>
+                            {dept}
+                          </option>
+                        ))}
                       </select>
-                    </label>
-                    <label className={labelClassName}>
-                      CGPA
-                      <input
-                        className={inputClassName}
-                        type="number"
-                        step="0.01"
-                        min={0}
-                        max={4}
-                        value={form.cgpa}
-                        onChange={(e) => updateField("cgpa", e.target.value)}
-                        required
-                      />
-                    </label>
+                    </FormLabel>
                   </div>
                 </section>
               )}
 
               {step === 1 && (
-                <section aria-labelledby="step-skills">
-                  <h3 id="step-skills" className="mb-3 text-lg font-semibold">
-                    Skills &amp; experience
+                <section aria-labelledby="step-technical">
+                  <h3 id="step-technical" className="mb-3 text-lg font-semibold">
+                    Technical skills
                   </h3>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <label className={`${labelClassName} sm:col-span-2`}>
-                      Programming Languages You Know
-                      <div className="mt-2 flex flex-wrap gap-2 rounded-lg border border-zinc-300 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-800/50">
-                        {languageOptions.map((lang) => {
-                          const active = form.programmingLanguages.includes(lang);
-                          return (
-                            <button
-                              key={lang}
-                              type="button"
-                              onClick={() => toggleLanguage(lang)}
-                              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                                active
-                                  ? "border-blue-600 bg-blue-600 text-white"
-                                  : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-400 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200"
-                              }`}
-                              aria-pressed={active}
-                            >
-                              {lang}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                        Click to select one or multiple languages.
-                      </p>
-                    </label>
-                    <label className={`${labelClassName} sm:col-span-2`}>
-                      Approximate Number of Problems Solved on Online Judge Platforms
+                    <FormLabel text="Programming Skill Score (0–100)">
                       <input
                         className={inputClassName}
                         type="number"
                         min={0}
-                        value={form.solvedProblems}
-                        onChange={(e) => updateField("solvedProblems", e.target.value)}
-                        required
-                      />
-                    </label>
-                    <label className={labelClassName}>
-                      Technical Skill (0-5)
-                      <input
-                        className={inputClassName}
-                        type="number"
-                        min={0}
-                        max={5}
-                        value={form.technicalSkill}
-                        onChange={(e) => updateField("technicalSkill", e.target.value)}
-                        required
-                      />
-                    </label>
-                    <label className={labelClassName}>
-                      Communication Skill (0-5)
-                      <input
-                        className={inputClassName}
-                        type="number"
-                        min={0}
-                        max={5}
-                        value={form.communicationSkill}
+                        max={100}
+                        placeholder="e.g. 44"
+                        value={form.programming_skill_score}
                         onChange={(e) =>
-                          updateField("communicationSkill", e.target.value)
+                          updateField("programming_skill_score", e.target.value)
                         }
                         required
                       />
-                    </label>
-                    <label className={labelClassName}>
-                      Problem Solving Ability (0-5)
+                    </FormLabel>
+                    <FormLabel text="Problem Solving Score (0–100)">
                       <input
                         className={inputClassName}
                         type="number"
                         min={0}
-                        max={5}
-                        value={form.problemSolving}
-                        onChange={(e) => updateField("problemSolving", e.target.value)}
+                        max={100}
+                        placeholder="e.g. 39"
+                        value={form.problem_solving_score}
+                        onChange={(e) =>
+                          updateField("problem_solving_score", e.target.value)
+                        }
                         required
                       />
-                    </label>
-                    <label className={labelClassName}>
-                      Teamwork Ability (0-5)
+                    </FormLabel>
+                    <FormLabel text="Database Skill Score (0–100)">
                       <input
                         className={inputClassName}
                         type="number"
                         min={0}
-                        max={5}
-                        value={form.teamwork}
-                        onChange={(e) => updateField("teamwork", e.target.value)}
+                        max={100}
+                        placeholder="e.g. 91"
+                        value={form.database_skill_score}
+                        onChange={(e) =>
+                          updateField("database_skill_score", e.target.value)
+                        }
                         required
                       />
-                    </label>
-                    <label className={`${labelClassName} sm:col-span-2`}>
-                      Extra-curricular or technical activities
-                      <div className="mt-2 flex flex-wrap gap-2 rounded-lg border border-zinc-300 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-800/50">
-                        {activityOptions.map((activity) => {
-                          const active = form.activities.includes(activity);
-                          return (
-                            <button
-                              key={activity}
-                              type="button"
-                              onClick={() => toggleActivity(activity)}
-                              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                                active
-                                  ? "border-indigo-600 bg-indigo-600 text-white"
-                                  : "border-zinc-300 bg-white text-zinc-700 hover:border-indigo-400 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200"
-                              }`}
-                              aria-pressed={active}
-                            >
-                              {activity}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                        Select one or multiple activities.
-                      </p>
-                    </label>
+                    </FormLabel>
+                    <FormLabel text="Learning Consistency Score (0–100)">
+                      <input
+                        className={inputClassName}
+                        type="number"
+                        min={0}
+                        max={100}
+                        placeholder="e.g. 61"
+                        value={form.learning_consistency_score}
+                        onChange={(e) =>
+                          updateField("learning_consistency_score", e.target.value)
+                        }
+                        required
+                      />
+                    </FormLabel>
+                    <FormLabel text="Coding Contest Rating">
+                      <input
+                        className={inputClassName}
+                        type="number"
+                        min={0}
+                        placeholder="e.g. 868"
+                        value={form.coding_contest_rating}
+                        onChange={(e) =>
+                          updateField("coding_contest_rating", e.target.value)
+                        }
+                        required
+                      />
+                    </FormLabel>
+                    <FormLabel text="Coding Contest Platform">
+                      <select
+                        className={inputClassName}
+                        value={form.coding_contest_platform}
+                        onChange={(e) =>
+                          updateField("coding_contest_platform", e.target.value)
+                        }
+                        required
+                      >
+                        <option value="">Select platform</option>
+                        {contestPlatformOptions.map((platform) => (
+                          <option key={platform} value={platform}>
+                            {platform}
+                          </option>
+                        ))}
+                      </select>
+                    </FormLabel>
                   </div>
                 </section>
               )}
 
               {step === 2 && (
-                <section aria-labelledby="step-projects">
-                  <h3 id="step-projects" className="mb-3 text-lg font-semibold">
-                    Projects &amp; placement context
+                <section aria-labelledby="step-experience">
+                  <h3 id="step-experience" className="mb-3 text-lg font-semibold">
+                    Experience &amp; projects
                   </h3>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <label className={labelClassName}>
-                      Number of Extra-Curricular Activities
+                    <FormLabel text="Internships Count">
                       <input
                         className={inputClassName}
                         type="number"
                         min={0}
-                        value={form.numberOfActivities}
+                        placeholder="e.g. 1"
+                        value={form.internships_count}
                         onChange={(e) =>
-                          updateField("numberOfActivities", e.target.value)
+                          updateField("internships_count", e.target.value)
                         }
                         required
                       />
-                    </label>
-                    <label className={labelClassName}>
-                      Number of Completed Projects
+                    </FormLabel>
+                    <FormLabel text="Hackathons Participated">
                       <input
                         className={inputClassName}
                         type="number"
                         min={0}
-                        value={form.completedProjects}
-                        onChange={(e) => updateField("completedProjects", e.target.value)}
+                        placeholder="e.g. 0"
+                        value={form.hackathons_participated}
+                        onChange={(e) =>
+                          updateField("hackathons_participated", e.target.value)
+                        }
                         required
                       />
-                    </label>
-                    <label className={labelClassName}>
-                      Published on GitHub / deployed online
-                      <select
-                        className={inputClassName}
-                        value={form.githubOrDeployed}
-                        onChange={(e) => updateField("githubOrDeployed", e.target.value)}
-                        required
-                      >
-                        <option value="">Select</option>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                      </select>
-                    </label>
-                    <label className={labelClassName}>
-                      Internship Experience
-                      <select
-                        className={inputClassName}
-                        value={form.internshipExperience}
-                        onChange={(e) =>
-                          updateField("internshipExperience", e.target.value)
-                        }
-                        required
-                      >
-                        <option value="">Select</option>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                      </select>
-                    </label>
-                    <label className={labelClassName}>
-                      Job through networking or referral
-                      <select
-                        className={inputClassName}
-                        value={form.networkingOrReferral}
-                        onChange={(e) =>
-                          updateField("networkingOrReferral", e.target.value)
-                        }
-                        required
-                      >
-                        <option value="">Select</option>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                      </select>
-                    </label>
-                    <label className={labelClassName}>
-                      Skill development courses completed
+                    </FormLabel>
+                    <FormLabel text="Freelance Experience">
                       <input
                         className={inputClassName}
                         type="number"
                         min={0}
-                        value={form.skillCourses}
-                        onChange={(e) => updateField("skillCourses", e.target.value)}
-                        required
-                      />
-                    </label>
-                    <label className={`${labelClassName} sm:col-span-2`}>
-                      Employment aligns with educational background
-                      <select
-                        className={inputClassName}
-                        value={form.jobAlignsWithEducation}
+                        placeholder="e.g. 0"
+                        value={form.freelance_experience}
                         onChange={(e) =>
-                          updateField("jobAlignsWithEducation", e.target.value)
+                          updateField("freelance_experience", e.target.value)
                         }
                         required
-                      >
-                        <option value="">Select</option>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                      </select>
-                    </label>
+                      />
+                    </FormLabel>
+                    <FormLabel text="Certifications Count">
+                      <input
+                        className={inputClassName}
+                        type="number"
+                        min={0}
+                        placeholder="e.g. 10"
+                        value={form.certifications_count}
+                        onChange={(e) =>
+                          updateField("certifications_count", e.target.value)
+                        }
+                        required
+                      />
+                    </FormLabel>
+                    <FormLabel text="Projects Count">
+                      <input
+                        className={inputClassName}
+                        type="number"
+                        min={0}
+                        placeholder="e.g. 5"
+                        value={form.projects_count}
+                        onChange={(e) =>
+                          updateField("projects_count", e.target.value)
+                        }
+                        required
+                      />
+                    </FormLabel>
+                    <FormLabel text="GitHub Repos">
+                      <input
+                        className={inputClassName}
+                        type="number"
+                        min={0}
+                        placeholder="e.g. 15"
+                        value={form.github_repos}
+                        onChange={(e) => updateField("github_repos", e.target.value)}
+                        required
+                      />
+                    </FormLabel>
+                  </div>
+                </section>
+              )}
+
+              {step === 3 && (
+                <section aria-labelledby="step-assessment">
+                  <h3 id="step-assessment" className="mb-3 text-lg font-semibold">
+                    Soft skills &amp; assessment
+                  </h3>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <FormLabel text="Communication Skill Score (0–100)">
+                      <input
+                        className={inputClassName}
+                        type="number"
+                        min={0}
+                        max={100}
+                        placeholder="e.g. 53"
+                        value={form.communication_skill_score}
+                        onChange={(e) =>
+                          updateField("communication_skill_score", e.target.value)
+                        }
+                        required
+                      />
+                    </FormLabel>
+                    <FormLabel text="Teamwork Score (0–100)">
+                      <input
+                        className={inputClassName}
+                        type="number"
+                        min={0}
+                        max={100}
+                        placeholder="e.g. 45"
+                        value={form.teamwork_score}
+                        onChange={(e) => updateField("teamwork_score", e.target.value)}
+                        required
+                      />
+                    </FormLabel>
+                    <FormLabel text="Leadership Score (0–100)">
+                      <input
+                        className={inputClassName}
+                        type="number"
+                        min={0}
+                        max={100}
+                        placeholder="e.g. 72"
+                        value={form.leadership_score}
+                        onChange={(e) =>
+                          updateField("leadership_score", e.target.value)
+                        }
+                        required
+                      />
+                    </FormLabel>
+                    <FormLabel text="Extracurricular Score (0–100)">
+                      <input
+                        className={inputClassName}
+                        type="number"
+                        min={0}
+                        max={100}
+                        placeholder="e.g. 1"
+                        value={form.extracurricular_score}
+                        onChange={(e) =>
+                          updateField("extracurricular_score", e.target.value)
+                        }
+                        required
+                      />
+                    </FormLabel>
+                    <FormLabel text="Presentation Skill Score (0–100)">
+                      <input
+                        className={inputClassName}
+                        type="number"
+                        min={0}
+                        max={100}
+                        placeholder="e.g. 54"
+                        value={form.presentation_skill_score}
+                        onChange={(e) =>
+                          updateField("presentation_skill_score", e.target.value)
+                        }
+                        required
+                      />
+                    </FormLabel>
+                    <FormLabel text="Aptitude Test Score (0–100)">
+                      <input
+                        className={inputClassName}
+                        type="number"
+                        min={0}
+                        max={100}
+                        placeholder="e.g. 53"
+                        value={form.aptitude_test_score}
+                        onChange={(e) =>
+                          updateField("aptitude_test_score", e.target.value)
+                        }
+                        required
+                      />
+                    </FormLabel>
+                    <FormLabel text="Mock Interview Score (0–100)">
+                      <input
+                        className={inputClassName}
+                        type="number"
+                        min={0}
+                        max={100}
+                        placeholder="e.g. 47"
+                        value={form.mock_interview_score}
+                        onChange={(e) =>
+                          updateField("mock_interview_score", e.target.value)
+                        }
+                        required
+                      />
+                    </FormLabel>
+                    <FormLabel text="Resume Quality Score (0–100)">
+                      <input
+                        className={inputClassName}
+                        type="number"
+                        min={0}
+                        max={100}
+                        placeholder="e.g. 100"
+                        value={form.resume_quality_score}
+                        onChange={(e) =>
+                          updateField("resume_quality_score", e.target.value)
+                        }
+                        required
+                      />
+                    </FormLabel>
                   </div>
                 </section>
               )}
             </form>
 
-              <div className="mt-6 flex flex-wrap gap-3 border-t border-zinc-200 pt-5 dark:border-zinc-800">
-                {step > 0 && (
-                  <button
-                    type="button"
-                    onClick={goBack}
-                    disabled={loading}
-                    className="rounded-lg border border-zinc-300 px-5 py-2.5 text-sm font-semibold transition hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
-                  >
-                    Back
-                  </button>
-                )}
-                {step < 2 ? (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      goNext();
-                    }}
-                    disabled={loading}
-                    className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    Next
-                  </button>
-                ) : (
-                  <button
-                    type="submit"
-                    form="student-job-prediction-form"
-                    className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-                    disabled={loading}
-                  >
-                    Predict Job Outcome
-                  </button>
-                )}
+            <div className="mt-6 flex flex-wrap gap-3 border-t border-zinc-200 pt-5 dark:border-zinc-800">
+              {step > 0 && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setForm(initialForm);
-                    setStep(0);
-                    setResult(null);
-                    setError("");
-                  }}
+                  onClick={goBack}
                   disabled={loading}
                   className="rounded-lg border border-zinc-300 px-5 py-2.5 text-sm font-semibold transition hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
                 >
-                  Reset
+                  Back
                 </button>
-              </div>
+              )}
+              {step < LAST_STEP ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    goNext();
+                  }}
+                  disabled={loading}
+                  className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
+                >
+                  Next
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  form="student-job-prediction-form"
+                  className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={loading}
+                >
+                  Predict Job Outcome
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setForm(initialForm);
+                  setStep(0);
+                  setResult(null);
+                  setError("");
+                }}
+                disabled={loading}
+                className="rounded-lg border border-zinc-300 px-5 py-2.5 text-sm font-semibold transition hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
+              >
+                Reset
+              </button>
+            </div>
 
             {error && (
               <p className="mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
