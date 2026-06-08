@@ -12,11 +12,13 @@ export function HowItWorksSection() {
         </p>
 
         <h2 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">
-          From your inputs to an AI-driven placement forecast
+          End-to-end prediction pipeline
         </h2>
 
         <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300 sm:text-base">
-          Your profile is transformed through a machine learning pipeline that analyzes key academic, technical, and behavioral signals to estimate your job placement outcome.
+          Your profile flows through a three-layer system: a Next.js web app, a Python
+          prediction API, and a CatBoost classifier trained on 50,000 synthetic student
+          records with 22 employability features.
         </p>
       </div>
 
@@ -30,10 +32,12 @@ export function HowItWorksSection() {
           </span>
           <div>
             <p className="font-medium text-zinc-900 dark:text-zinc-100">
-              Create your profile
+              Enter your student profile
             </p>
             <p className="mt-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              Enter your academic performance, technical skills, projects, internships, and extracurricular activities-mirroring real student data used for training.
+              Fill in 22 features across academics, technical skills, coding experience,
+              internships, soft skills, and placement preparation—matching the training
+              dataset structure.
             </p>
           </div>
         </li>
@@ -47,10 +51,12 @@ export function HowItWorksSection() {
           </span>
           <div>
             <p className="font-medium text-zinc-900 dark:text-zinc-100">
-              Intelligent data preprocessing
+              Submit to the prediction API
             </p>
             <p className="mt-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              Your inputs are cleaned and transformed using imputation and encoding techniques, ensuring consistency with the dataset used to train the model.
+              The Next.js app sends your profile to the Python prediction server, where
+              inputs are preprocessed with scaling, encoding, and feature alignment to
+              match the trained model.
             </p>
           </div>
         </li>
@@ -64,10 +70,11 @@ export function HowItWorksSection() {
           </span>
           <div>
             <p className="font-medium text-zinc-900 dark:text-zinc-100">
-              Machine learning prediction
+              CatBoost model prediction
             </p>
             <p className="mt-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              A trained Random Forest model analyzes your profile and identifies patterns from past student outcomes to predict your placement probability.
+              CatBoost—the best-performing of five evaluated models (83.0% accuracy)—
+              analyzes your employability signals and predicts your placement outcome.
             </p>
           </div>
         </li>
@@ -81,10 +88,12 @@ export function HowItWorksSection() {
           </span>
           <div>
             <p className="font-medium text-zinc-900 dark:text-zinc-100">
-              Result with confidence score
+              Placement result and confidence
             </p>
             <p className="mt-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              You receive a predicted outcome along with a confidence score, indicating how strongly the model estimates your chances of getting a job.
+              You receive a Placed or Not Placed prediction with a confidence score,
+              helping you benchmark readiness and focus on the employability factors
+              that matter most.
             </p>
           </div>
         </li>

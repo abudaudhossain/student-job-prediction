@@ -4,10 +4,10 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { OpenPredictionModalButton } from "./open-prediction-modal-button";
 
-const subtitle = "Data-driven career intelligence";
-const title = "Student Job Prediction";
+const subtitle = "Using Machine Learning";
+const title = "AI-Based Student Job Placement Prediction";
 const shortDescription =
-  "Connect your academic profile, technical skills, and real-world readiness to a clear placement outlook-grounded in historical outcomes, not guesswork.";
+  "Predict whether you are likely to be placed in a job based on academic performance, technical skills, soft skills, practical experience, and placement preparation—powered by a CatBoost model trained on 50,000 synthetic student profiles.";
 
 const slides = [
   {
