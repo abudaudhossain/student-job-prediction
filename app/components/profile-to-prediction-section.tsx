@@ -17,9 +17,9 @@ function formatCount(n: number): string {
 
 export function ProfileToPredictionSection() {
   const [stats, setStats] = useState<StatsResponse | null>({
-    datasetRows: 100000,
-    modelAccuracyPercent: 93.96,
-    featureCount: 18,
+    datasetRows: 50000,
+    modelAccuracyPercent: 83,
+    featureCount: 23,
   });
 
   const [predictionCount, setPredictionCount] = useState(0);
@@ -78,7 +78,7 @@ export function ProfileToPredictionSection() {
             Model accuracy
           </p>
           <p className="mt-2 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
-            Validation-style accuracy for your personal Random Forest model on
+            Validation-style accuracy for your personal CatBoost model on
             employability labels.
           </p>
         </div>
