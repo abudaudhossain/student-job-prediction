@@ -119,8 +119,7 @@ const contestPlatformOptions = [
   "Codeforces",
   "CodeChef",
   "LeetCode",
-  "HackerRank",
-  "None",
+  "HackerRank"
 ];
 
 function validateRequiredFields(
