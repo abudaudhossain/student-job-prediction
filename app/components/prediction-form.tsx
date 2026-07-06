@@ -120,11 +120,20 @@ const contestPlatformOptions = [
   "CodeChef",
   "LeetCode",
   "HackerRank",
-  "None",
+
 ];
 
+const contestScoreRules = {
+  Codeforces: { min: 0, max: 3900, placeholder: "e.g. 1450" },
+  CodeChef: { min: 0, max: 3500, placeholder: "e.g. 1620" },
+  LeetCode: { min: 0, max: 3800, placeholder: "e.g. 1850" },
+  HackerRank: { min: 0, max: 100, placeholder: "e.g. 92" },
+} as const;
+
+type ContestPlatform = keyof typeof contestScoreRules;
+
 const SKILL_SCORE_LABEL_THRESHOLDS = [
-  { label: "Outstanding", min: 96 },
+  { label: "Outstanding", min: 97 },
   { label: "Excellent", min: 85 },
   { label: "Very Good", min: 70 },
   { label: "Good", min: 60 },
@@ -134,9 +143,10 @@ const SKILL_SCORE_LABEL_THRESHOLDS = [
 ] as const;
 
 const SOFT_SKILL_SCORE_LABEL_THRESHOLDS = [
-  { label: "Excellent", min: 95 },
-  { label: "Very Good", min: 80 },
-  { label: "Good", min: 65 },
+  { label: "Outstanding", min: 97 },
+  { label: "Excellent", min: 85 },
+  { label: "Very Good", min: 70 },
+  { label: "Good", min: 60 },
   { label: "Average", min: 50 },
   { label: "Needs Improvement", min: 35 },
   { label: "Poor", min: 20 },
@@ -183,6 +193,31 @@ function validateRequiredFields(
   return null;
 }
 
+function validateContestScore(form: FormState): string | null {
+  const platform = form.coding_contest_platform.trim();
+  const ratingRaw = form.coding_contest_rating.trim();
+
+  if (!platform || !ratingRaw) {
+    return "Please complete all technical skill fields.";
+  }
+
+  if (!(platform in contestScoreRules)) {
+    return "Please select a valid coding contest platform.";
+  }
+
+  const score = Number(ratingRaw);
+  if (!Number.isFinite(score)) {
+    return "Coding contest score must be a valid number.";
+  }
+
+  const { min, max } = contestScoreRules[platform as ContestPlatform];
+  if (score < min || score > max) {
+    return `${platform} score must be between ${min} and ${max}.`;
+  }
+
+  return null;
+}
+
 const academicFields: (keyof FormState)[] = ["cgpa", "department"];
 
 const technicalFields: (keyof FormState)[] = [
@@ -216,7 +251,7 @@ const assessmentFields: (keyof FormState)[] = [
 
 const DEFAULT_PREDICT_API_URL =
   "http://localhost:8000/predict";
-  // "https://student-job-predition-server.onrender.com/predict";
+// "https://student-job-predition-server.onrender.com/predict";
 
 function predictApiUrl(): string {
   const fromEnv = process.env.NEXT_PUBLIC_PREDICT_API_URL?.trim();
@@ -251,6 +286,138 @@ function formToPredictApiBody(form: FormState) {
   };
 }
 
+function PredictionResult({
+  result,
+  standalone = false,
+}: {
+  result: PredictionResponse;
+  standalone?: boolean;
+}) {
+  const gotJob = result.status === "Got a Job";
+  const confidencePct = Math.min(
+    100,
+    Math.max(0, Math.round(result.confidenceGotJob * 100)),
+  );
+  const confidenceLabel = (result.confidenceGotJob * 100).toFixed(1);
+
+  return (
+    <div
+      className={
+        standalone
+          ? "flex w-full max-w-md flex-col items-center"
+          : "mt-8 flex justify-center border-t border-zinc-200 pt-8 dark:border-zinc-800"
+      }
+      role="status"
+      aria-live="polite"
+    >
+      <div
+        className={`w-full rounded-2xl border text-center shadow-sm ${
+          standalone ? "p-5 sm:p-6" : "max-w-md p-6 sm:p-8"
+        } ${
+          gotJob
+            ? "border-emerald-200/80 bg-linear-to-b from-emerald-50 to-white dark:border-emerald-900/60 dark:from-emerald-950/40 dark:to-zinc-900"
+            : "border-amber-200/80 bg-linear-to-b from-amber-50 to-white dark:border-amber-900/60 dark:from-amber-950/30 dark:to-zinc-900"
+        }`}
+      >
+        <div
+          className={`mx-auto flex items-center justify-center rounded-full ${
+            standalone ? "h-14 w-14" : "h-16 w-16"
+          } ${
+            gotJob
+              ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-300"
+              : "bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-300"
+          }`}
+        >
+          {gotJob ? (
+            <svg
+              className={standalone ? "h-7 w-7" : "h-8 w-8"}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden
+            >
+              <path d="M9 12l2 2 4-4" />
+              <circle cx="12" cy="12" r="9" />
+            </svg>
+          ) : (
+            <svg
+              className={standalone ? "h-7 w-7" : "h-8 w-8"}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden
+            >
+              <circle cx="12" cy="12" r="9" />
+              <path d="M15 9l-6 6M9 9l6 6" />
+            </svg>
+          )}
+        </div>
+
+        <p className="mt-4 text-xs font-semibold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+          Prediction result
+        </p>
+
+        <h3
+          className={`mt-2 font-bold tracking-tight ${
+            standalone ? "text-xl sm:text-2xl" : "text-2xl sm:text-3xl"
+          } ${
+            gotJob
+              ? "text-emerald-700 dark:text-emerald-300"
+              : "text-amber-800 dark:text-amber-200"
+          }`}
+        >
+          {result.status}
+        </h3>
+
+        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">
+          {gotJob
+            ? "Your profile aligns well with typical successful placements."
+            : "Focus on strengthening key skills to improve placement chances."}
+        </p>
+
+        <div className="mx-auto mt-5 max-w-xs">
+          <div className="flex items-end justify-center gap-1">
+            <span
+              className={`font-bold tabular-nums ${
+                standalone ? "text-3xl" : "text-4xl"
+              } ${
+                gotJob
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-amber-700 dark:text-amber-300"
+              }`}
+            >
+              {confidenceLabel}%
+            </span>
+          </div>
+          <p className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            Confidence (Got a Job)
+          </p>
+
+          <div
+            className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-zinc-200/80 dark:bg-zinc-700"
+            role="progressbar"
+            aria-valuenow={confidencePct}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`Confidence got a job: ${confidenceLabel} percent`}
+          >
+            <div
+              className={`h-full rounded-full transition-all duration-700 ease-out ${
+                gotJob
+                  ? "bg-linear-to-r from-emerald-500 to-teal-500"
+                  : "bg-linear-to-r from-amber-500 to-orange-500"
+              }`}
+              style={{ width: `${confidencePct}%` }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function stepValidators(step: number, form: FormState): string | null {
   switch (step) {
     case 0:
@@ -260,10 +427,12 @@ function stepValidators(step: number, form: FormState): string | null {
         "Please complete all academic fields.",
       );
     case 1:
-      return validateRequiredFields(
-        form,
-        technicalFields,
-        "Please complete all technical skill fields.",
+      return (
+        validateRequiredFields(
+          form,
+          technicalFields,
+          "Please complete all technical skill fields.",
+        ) ?? validateContestScore(form)
       );
     case 2:
       return validateRequiredFields(
@@ -405,7 +574,41 @@ export function PredictionFormModal() {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
+  function updateContestPlatform(platform: string) {
+    setForm((prev) => {
+      const next = { ...prev, coding_contest_platform: platform };
+      if (!(platform in contestScoreRules)) {
+        next.coding_contest_rating = "";
+        return next;
+      }
+
+      const { min, max } = contestScoreRules[platform as ContestPlatform];
+      const currentScore = Number(prev.coding_contest_rating);
+      if (
+        !prev.coding_contest_rating.trim() ||
+        !Number.isFinite(currentScore) ||
+        currentScore < min ||
+        currentScore > max
+      ) {
+        next.coding_contest_rating = platform === "None" ? "0" : "";
+      }
+
+      return next;
+    });
+  }
+
   const progressPct = ((step + 1) / STEPS.length) * 100;
+  const selectedContestRule = form.coding_contest_platform
+    ? contestScoreRules[form.coding_contest_platform as ContestPlatform]
+    : null;
+  const showingResult = result !== null;
+
+  function resetForm() {
+    setForm(initialForm);
+    setStep(0);
+    setResult(null);
+    setError("");
+  }
 
   return (
     <div
@@ -439,7 +642,9 @@ export function PredictionFormModal() {
               Student Job Prediction
             </h2>
             <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
-              Step {step + 1} of {STEPS.length}: {STEPS[step].title}
+              {showingResult
+                ? "Your job placement prediction is ready"
+                : `Step ${step + 1} of ${STEPS.length}: ${STEPS[step].title}`}
             </p>
           </div>
           <button
@@ -462,54 +667,75 @@ export function PredictionFormModal() {
           </button>
         </div>
 
-        <div className="shrink-0 border-b border-zinc-100 px-5 py-3 dark:border-zinc-800 sm:px-6">
-          <ol className="flex flex-wrap gap-2 sm:gap-4" aria-label="Form steps">
-            {STEPS.map((s, i) => (
-              <li
-                key={s.id}
-                className={`flex items-center gap-2 text-xs sm:text-sm ${
-                  i === step
-                    ? "font-semibold text-blue-700 dark:text-blue-300"
-                    : i < step
-                      ? "text-zinc-500 dark:text-zinc-400"
-                      : "text-zinc-400 dark:text-zinc-500"
-                }`}
-              >
-                <span
-                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                    i === step
-                      ? "bg-blue-600 text-white"
+        {!showingResult && (
+          <div className="shrink-0 border-b border-zinc-100 px-5 py-3 dark:border-zinc-800 sm:px-6">
+            <ol className="flex flex-wrap gap-2 sm:gap-4" aria-label="Form steps">
+              {STEPS.map((s, i) => (
+                <li
+                  key={s.id}
+                  className={`flex items-center gap-2 text-xs sm:text-sm ${i === step
+                      ? "font-semibold text-blue-700 dark:text-blue-300"
                       : i < step
-                        ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
-                        : "bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400"
-                  }`}
-                  aria-current={i === step ? "step" : undefined}
+                        ? "text-zinc-500 dark:text-zinc-400"
+                        : "text-zinc-400 dark:text-zinc-500"
+                    }`}
                 >
-                  {i < step ? "✓" : i + 1}
-                </span>
-                <span className="hidden sm:inline">{s.title}</span>
-                <span className="sm:hidden">{s.short}</span>
-              </li>
-            ))}
-          </ol>
-          <div
-            className="mt-3 h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700"
-            role="progressbar"
-            aria-valuenow={step + 1}
-            aria-valuemin={1}
-            aria-valuemax={STEPS.length}
-          >
+                  <span
+                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${i === step
+                        ? "bg-blue-600 text-white"
+                        : i < step
+                          ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
+                          : "bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400"
+                      }`}
+                    aria-current={i === step ? "step" : undefined}
+                  >
+                    {i < step ? "✓" : i + 1}
+                  </span>
+                  <span className="hidden sm:inline">{s.title}</span>
+                  <span className="sm:hidden">{s.short}</span>
+                </li>
+              ))}
+            </ol>
             <div
-              className="h-full rounded-full bg-linear-to-r from-blue-600 to-indigo-600 transition-[width] duration-300 ease-out dark:from-blue-500 dark:to-indigo-500"
-              style={{ width: `${progressPct}%` }}
-            />
+              className="mt-3 h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700"
+              role="progressbar"
+              aria-valuenow={step + 1}
+              aria-valuemin={1}
+              aria-valuemax={STEPS.length}
+            >
+              <div
+                className="h-full rounded-full bg-linear-to-r from-blue-600 to-indigo-600 transition-[width] duration-300 ease-out dark:from-blue-500 dark:to-indigo-500"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
-        <div className="relative min-h-0 flex-1">
+        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
           {loading && <PredictionFormLoader />}
 
-          <div className="min-h-0 max-h-[min(60vh,560px)] overflow-y-auto px-5 py-5 sm:max-h-[min(65vh,600px)] sm:px-6">
+          {showingResult ? (
+            <div className="flex min-h-[min(52vh,480px)] flex-1 flex-col items-center justify-center overflow-hidden px-5 py-6 sm:min-h-[min(56vh,520px)] sm:px-8">
+              <PredictionResult result={result} standalone />
+              <div className="mt-6 flex flex-wrap justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+                >
+                  Predict Again
+                </button>
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="rounded-lg border border-zinc-300 px-5 py-2.5 text-sm font-semibold transition hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          ) : (
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
             <form
               id="student-job-prediction-form"
               className="space-y-6"
@@ -595,26 +821,11 @@ export function PredictionFormModal() {
                         }
                       />
                     </FormLabel>
-                    <FormLabel text="Coding Contest Rating">
-                      <input
-                        className={inputClassName}
-                        type="number"
-                        min={0}
-                        placeholder="e.g. 868"
-                        value={form.coding_contest_rating}
-                        onChange={(e) =>
-                          updateField("coding_contest_rating", e.target.value)
-                        }
-                        required
-                      />
-                    </FormLabel>
                     <FormLabel text="Coding Contest Platform">
                       <select
                         className={inputClassName}
                         value={form.coding_contest_platform}
-                        onChange={(e) =>
-                          updateField("coding_contest_platform", e.target.value)
-                        }
+                        onChange={(e) => updateContestPlatform(e.target.value)}
                         required
                       >
                         <option value="">Select platform</option>
@@ -625,6 +836,34 @@ export function PredictionFormModal() {
                         ))}
                       </select>
                     </FormLabel>
+                    <FormLabel text="Coding Contest Score / Rating">
+                      <input
+                        className={inputClassName}
+                        type="number"
+                        min={selectedContestRule?.min ?? 0}
+                        max={selectedContestRule?.max}
+                        step={1}
+                        placeholder={
+                          selectedContestRule?.placeholder ?? "Select platform first"
+                        }
+                        value={form.coding_contest_rating}
+                        onChange={(e) =>
+                          updateField("coding_contest_rating", e.target.value)
+                        }
+                        required
+                        disabled={!form.coding_contest_platform}
+                        aria-describedby="contest-score-hint"
+                      />
+                      <p
+                        id="contest-score-hint"
+                        className="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400"
+                      >
+                        {selectedContestRule
+                          ? `Allowed range for ${form.coding_contest_platform}: ${selectedContestRule.min} to ${selectedContestRule.max}.`
+                          : "Choose a coding contest platform to enter a valid score."}
+                      </p>
+                    </FormLabel>
+
                   </div>
                 </section>
               )}
@@ -834,12 +1073,7 @@ export function PredictionFormModal() {
               )}
               <button
                 type="button"
-                onClick={() => {
-                  setForm(initialForm);
-                  setStep(0);
-                  setResult(null);
-                  setError("");
-                }}
+                onClick={resetForm}
                 disabled={loading}
                 className="rounded-lg border border-zinc-300 px-5 py-2.5 text-sm font-semibold transition hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
               >
@@ -848,29 +1082,14 @@ export function PredictionFormModal() {
             </div>
 
             {error && (
-              <p className="mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
-                {error}
-              </p>
-            )}
-
-            {result && (
-              <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-5 dark:border-emerald-900 dark:bg-emerald-950">
-                <p className="text-xl font-bold">Prediction: {result.status}</p>
-                <p className="mt-2 text-sm text-zinc-700 dark:text-zinc-200">
-                  Confidence (Got a Job):{" "}
-                  <span className="font-semibold">
-                    {(result.confidenceGotJob * 100).toFixed(2)}%
-                  </span>
+              <div className="mt-6 flex justify-center">
+                <p className="w-full max-w-md rounded-xl border border-red-200 bg-red-50 p-4 text-center text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
+                  {error}
                 </p>
-                <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
-                  <div
-                    className="h-full rounded-full bg-emerald-500 transition-all"
-                    style={{ width: `${Math.round(result.confidenceGotJob * 100)}%` }}
-                  />
-                </div>
               </div>
             )}
           </div>
+          )}
         </div>
       </div>
     </div>

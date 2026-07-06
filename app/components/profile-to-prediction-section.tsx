@@ -18,7 +18,7 @@ function formatCount(n: number): string {
 export function ProfileToPredictionSection() {
   const [stats, setStats] = useState<StatsResponse | null>({
     datasetRows: 100000,
-    modelAccuracyPercent: 93.96,
+    modelAccuracyPercent: 83.1,
     featureCount: 18,
   });
 
