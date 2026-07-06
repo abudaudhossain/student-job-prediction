@@ -109,7 +109,6 @@ function FormLabel({
 const departmentOptions = [
   "CSE",
   "EEE",
-  "B.B.A",
   "Civil",
   "English",
   "Pharmacy",
@@ -120,7 +119,6 @@ const contestPlatformOptions = [
   "CodeChef",
   "LeetCode",
   "HackerRank",
-
 ];
 
 const contestScoreRules = {
