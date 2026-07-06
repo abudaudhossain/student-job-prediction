@@ -123,6 +123,53 @@ const contestPlatformOptions = [
   "None",
 ];
 
+const SKILL_SCORE_LABEL_THRESHOLDS = [
+  { label: "Outstanding", min: 96 },
+  { label: "Excellent", min: 85 },
+  { label: "Very Good", min: 70 },
+  { label: "Good", min: 60 },
+  { label: "Average", min: 50 },
+  { label: "Needs Improvement", min: 35 },
+  { label: "Poor", min: 20 },
+] as const;
+
+const SOFT_SKILL_SCORE_LABEL_THRESHOLDS = [
+  { label: "Excellent", min: 95 },
+  { label: "Very Good", min: 80 },
+  { label: "Good", min: 65 },
+  { label: "Average", min: 50 },
+  { label: "Needs Improvement", min: 35 },
+  { label: "Poor", min: 20 },
+] as const;
+
+type SkillScoreThreshold = { label: string; min: number };
+
+function SkillScoreSelect({
+  value,
+  onChange,
+  thresholds = SKILL_SCORE_LABEL_THRESHOLDS,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  thresholds?: readonly SkillScoreThreshold[];
+}) {
+  return (
+    <select
+      className={inputClassName}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      required
+    >
+      <option value="">Select label</option>
+      {thresholds.map(({ label, min }) => (
+        <option key={label} value={String(min)}>
+          {label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 function validateRequiredFields(
   form: FormState,
   keys: (keyof FormState)[],
@@ -168,7 +215,8 @@ const assessmentFields: (keyof FormState)[] = [
 ];
 
 const DEFAULT_PREDICT_API_URL =
-  "https://student-job-predition-server.onrender.com/predict";
+  "http://localhost:8000/predict";
+  // "https://student-job-predition-server.onrender.com/predict";
 
 function predictApiUrl(): string {
   const fromEnv = process.env.NEXT_PUBLIC_PREDICT_API_URL?.trim();
@@ -519,60 +567,32 @@ export function PredictionFormModal() {
                     Technical skills
                   </h3>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <FormLabel text="Programming Skill Score (0–100)">
-                      <input
-                        className={inputClassName}
-                        type="number"
-                        min={0}
-                        max={100}
-                        placeholder="e.g. 44"
+                    <FormLabel text="Programming Skill">
+                      <SkillScoreSelect
                         value={form.programming_skill_score}
-                        onChange={(e) =>
-                          updateField("programming_skill_score", e.target.value)
+                        onChange={(value) =>
+                          updateField("programming_skill_score", value)
                         }
-                        required
                       />
                     </FormLabel>
-                    <FormLabel text="Problem Solving Score (0–100)">
-                      <input
-                        className={inputClassName}
-                        type="number"
-                        min={0}
-                        max={100}
-                        placeholder="e.g. 39"
+                    <FormLabel text="Problem Solving Skill">
+                      <SkillScoreSelect
                         value={form.problem_solving_score}
-                        onChange={(e) =>
-                          updateField("problem_solving_score", e.target.value)
-                        }
-                        required
+                        onChange={(value) => updateField("problem_solving_score", value)}
                       />
                     </FormLabel>
-                    <FormLabel text="Database Skill Score (0–100)">
-                      <input
-                        className={inputClassName}
-                        type="number"
-                        min={0}
-                        max={100}
-                        placeholder="e.g. 91"
+                    <FormLabel text="Database Skill">
+                      <SkillScoreSelect
                         value={form.database_skill_score}
-                        onChange={(e) =>
-                          updateField("database_skill_score", e.target.value)
-                        }
-                        required
+                        onChange={(value) => updateField("database_skill_score", value)}
                       />
                     </FormLabel>
-                    <FormLabel text="Learning Consistency Score (0–100)">
-                      <input
-                        className={inputClassName}
-                        type="number"
-                        min={0}
-                        max={100}
-                        placeholder="e.g. 61"
+                    <FormLabel text="Learning Consistency">
+                      <SkillScoreSelect
                         value={form.learning_consistency_score}
-                        onChange={(e) =>
-                          updateField("learning_consistency_score", e.target.value)
+                        onChange={(value) =>
+                          updateField("learning_consistency_score", value)
                         }
-                        required
                       />
                     </FormLabel>
                     <FormLabel text="Coding Contest Rating">
@@ -680,16 +700,24 @@ export function PredictionFormModal() {
                         required
                       />
                     </FormLabel>
-                    <FormLabel text="GitHub Repos">
+                    <FormLabel text="Open Source GitHub Repos">
                       <input
                         className={inputClassName}
                         type="number"
                         min={0}
-                        placeholder="e.g. 15"
+                        placeholder="e.g. 3"
                         value={form.github_repos}
                         onChange={(e) => updateField("github_repos", e.target.value)}
                         required
+                        aria-describedby="github-repos-hint"
                       />
+                      <p
+                        id="github-repos-hint"
+                        className="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400"
+                      >
+                        How many open-source repositories you have on GitHub (your
+                        own projects or contributions).
+                      </p>
                     </FormLabel>
                   </div>
                 </section>
@@ -701,103 +729,58 @@ export function PredictionFormModal() {
                     Soft skills &amp; assessment
                   </h3>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <FormLabel text="Communication Skill Score (0–100)">
-                      <input
-                        className={inputClassName}
-                        type="number"
-                        min={0}
-                        max={100}
-                        placeholder="e.g. 53"
+                    <FormLabel text="Communication Skill">
+                      <SkillScoreSelect
                         value={form.communication_skill_score}
-                        onChange={(e) =>
-                          updateField("communication_skill_score", e.target.value)
+                        onChange={(value) =>
+                          updateField("communication_skill_score", value)
                         }
-                        required
                       />
                     </FormLabel>
-                    <FormLabel text="Teamwork Score (0–100)">
-                      <input
-                        className={inputClassName}
-                        type="number"
-                        min={0}
-                        max={100}
-                        placeholder="e.g. 45"
+                    <FormLabel text="Teamwork Skill">
+                      <SkillScoreSelect
                         value={form.teamwork_score}
-                        onChange={(e) => updateField("teamwork_score", e.target.value)}
-                        required
+                        onChange={(value) => updateField("teamwork_score", value)}
+                        thresholds={SOFT_SKILL_SCORE_LABEL_THRESHOLDS}
                       />
                     </FormLabel>
-                    <FormLabel text="Leadership Score (0–100)">
-                      <input
-                        className={inputClassName}
-                        type="number"
-                        min={0}
-                        max={100}
-                        placeholder="e.g. 72"
+                    <FormLabel text="Leadership Skill">
+                      <SkillScoreSelect
                         value={form.leadership_score}
-                        onChange={(e) =>
-                          updateField("leadership_score", e.target.value)
-                        }
-                        required
+                        onChange={(value) => updateField("leadership_score", value)}
+                        thresholds={SOFT_SKILL_SCORE_LABEL_THRESHOLDS}
                       />
                     </FormLabel>
-                    <FormLabel text="Extracurricular Score (0–100)">
-                      <input
-                        className={inputClassName}
-                        type="number"
-                        min={0}
-                        max={100}
-                        placeholder="e.g. 1"
+                    <FormLabel text="Extracurricular Skill">
+                      <SkillScoreSelect
                         value={form.extracurricular_score}
-                        onChange={(e) =>
-                          updateField("extracurricular_score", e.target.value)
+                        onChange={(value) =>
+                          updateField("extracurricular_score", value)
                         }
-                        required
+                        thresholds={SOFT_SKILL_SCORE_LABEL_THRESHOLDS}
                       />
                     </FormLabel>
-                    <FormLabel text="Presentation Skill Score (0–100)">
-                      <input
-                        className={inputClassName}
-                        type="number"
-                        min={0}
-                        max={100}
-                        placeholder="e.g. 54"
+                    <FormLabel text="Presentation Skill">
+                      <SkillScoreSelect
                         value={form.presentation_skill_score}
-                        onChange={(e) =>
-                          updateField("presentation_skill_score", e.target.value)
+                        onChange={(value) =>
+                          updateField("presentation_skill_score", value)
                         }
-                        required
                       />
                     </FormLabel>
-                    <FormLabel text="Aptitude Test Score (0–100)">
-                      <input
-                        className={inputClassName}
-                        type="number"
-                        min={0}
-                        max={100}
-                        placeholder="e.g. 53"
+                    <FormLabel text="Aptitude Test">
+                      <SkillScoreSelect
                         value={form.aptitude_test_score}
-                        onChange={(e) =>
-                          updateField("aptitude_test_score", e.target.value)
-                        }
-                        required
+                        onChange={(value) => updateField("aptitude_test_score", value)}
                       />
                     </FormLabel>
-                    <FormLabel text="Mock Interview Score (0–100)">
-                      <input
-                        className={inputClassName}
-                        type="number"
-                        min={0}
-                        max={100}
-                        placeholder="e.g. 47"
+                    <FormLabel text="Mock Interview">
+                      <SkillScoreSelect
                         value={form.mock_interview_score}
-                        onChange={(e) =>
-                          updateField("mock_interview_score", e.target.value)
-                        }
-                        required
+                        onChange={(value) => updateField("mock_interview_score", value)}
                       />
                     </FormLabel>
-                    <FormLabel text="Resume Quality Score (0–100)">
+                    <FormLabel text="Resume Quality Score (0-100)">
                       <input
                         className={inputClassName}
                         type="number"
