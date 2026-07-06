@@ -17,9 +17,9 @@ function formatCount(n: number): string {
 
 export function ProfileToPredictionSection() {
   const [stats, setStats] = useState<StatsResponse | null>({
-    datasetRows: 100000,
-    modelAccuracyPercent: 83.1,
-    featureCount: 18,
+    datasetRows: 50000,
+    modelAccuracyPercent: 83,
+    featureCount: 22,
   });
 
   const [predictionCount, setPredictionCount] = useState(0);
@@ -38,7 +38,7 @@ export function ProfileToPredictionSection() {
     };
   }, [refreshPredictionCount]);
 
-  const statsError = `Rows in the training set with ${stats?.featureCount ?? 18} profile features each.`;
+  const datasetCaption = `Synthetic student records with ${stats?.featureCount ?? 22} employability features each.`;
 
   return (
     <section
@@ -55,13 +55,16 @@ export function ProfileToPredictionSection() {
         </h2>
 
         <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300 sm:text-base">
-          Provide your academic background, technical skills, and real-world experience to receive a personalized job placement prediction.
-          This system uses a machine learning model (Random Forest pipeline) trained on historical student outcomes to estimate your chances of getting a job.
+          Provide your academic background, technical skills, soft skills, and placement
+          preparation details to receive a personalized job placement prediction. The
+          production CatBoost model was selected after comparing five classifiers and
+          achieves 83.0% accuracy on the synthetic training dataset.
         </p>
 
         <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300 sm:text-base">
-          The prediction is based on key factors such as CGPA, problem-solving ability, projects, internships, and skill development activities.
-          You’ll also see a confidence score indicating how strongly the model believes in the prediction.
+          Predictions reflect a weighted employability score combining CGPA (15%),
+          technical skills (25%), communication (15%), aptitude (15%), mock interview
+          performance (15%), and experience (15%)—aligned with industry hiring trends.
         </p>
 
         <p className="mt-3 text-sm leading-6 text-zinc-500 dark:text-zinc-400 sm:text-sm">
@@ -78,8 +81,8 @@ export function ProfileToPredictionSection() {
             Model accuracy
           </p>
           <p className="mt-2 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
-            Validation-style accuracy for your personal Random Forest model on
-            employability labels.
+            CatBoost accuracy on the 50,000-record synthetic dataset (selected over
+            Logistic Regression, Random Forest, XGBoost, and Decision Tree).
           </p>
         </div>
 
@@ -103,7 +106,7 @@ export function ProfileToPredictionSection() {
             Data used
           </p>
           <p className="mt-2 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
-            {statsError}
+            {datasetCaption}
           </p>
         </div>
       </div>

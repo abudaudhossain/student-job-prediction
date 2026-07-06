@@ -25,25 +25,34 @@ export function AboutUsSection() {
         <div className="space-y-8">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-400">
-              About us
+              Project overview
             </p>
             <h2 className="mt-2 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-              About Us
+              About This System
             </h2>
             <p className="mt-3 text-sm leading-7 text-zinc-600 dark:text-zinc-300 sm:text-base">
-              We are focused on helping students and educators make informed career
-              decisions through practical data analysis and transparent outcomes.
+              This AI-powered student job placement prediction system uses machine
+              learning to estimate whether a student is likely to be placed based on
+              academic performance, technical skills, soft skills, practical experience,
+              and placement preparation activities.
+            </p>
+            <p className="mt-3 text-sm leading-7 text-zinc-600 dark:text-zinc-300 sm:text-base">
+              The model is trained on a synthetic dataset of 50,000 student records with
+              22 feature variables, designed to simulate real-world campus recruitment
+              scenarios.
             </p>
           </div>
 
           <div className="border-t border-zinc-200 pt-8 dark:border-zinc-700">
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-              Our goal
+              Project objectives
             </h3>
-            <p className="mt-2 text-sm leading-7 text-zinc-600 dark:text-zinc-300 sm:text-base">
-              Our goal is to identify strengths and gaps early so students can improve
-              interview readiness, build strong portfolios, and increase job success.
-            </p>
+            <ul className="mt-3 space-y-2 text-sm leading-7 text-zinc-600 dark:text-zinc-300 sm:text-base">
+              <li>• Analyze how academic, technical, and behavioral factors affect employability</li>
+              <li>• Train and evaluate machine learning models for placement prediction</li>
+              <li>• Identify the most important features influencing placement outcomes</li>
+              <li>• Help students understand skill gaps and improve placement preparation</li>
+            </ul>
           </div>
         </div>
       </div>

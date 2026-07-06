@@ -639,12 +639,14 @@ export function PredictionFormModal() {
               id="prediction-modal-title"
               className="text-xl font-bold tracking-tight sm:text-2xl"
             >
-              Student Job Prediction
+              Job Placement Prediction
             </h2>
             <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
+
               {showingResult
                 ? "Your job placement prediction is ready"
-                : `Step ${step + 1} of ${STEPS.length}: ${STEPS[step].title}`}
+                : "Enter your 22 employability features · Step " + step + 1 + " of " + STEPS.length + ": " + STEPS[step].title}
+
             </p>
           </div>
           <button
