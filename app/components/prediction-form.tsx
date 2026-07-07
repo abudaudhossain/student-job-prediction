@@ -109,6 +109,7 @@ function FormLabel({
 const departmentOptions = [
   "CSE",
   "EEE",
+  "B.B.A",
   "Civil",
   "English",
   "Pharmacy",

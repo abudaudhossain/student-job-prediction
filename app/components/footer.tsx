@@ -22,7 +22,7 @@ export function Footer() {
             </Link>
 
             <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              AI-based student job placement prediction using a CatBoost model trained on
+              AI-based student job placement prediction using a Random Forest model trained on
               50,000 synthetic student records. Predict placement outcomes, identify skill
               gaps, and support career counseling and placement preparation strategies.
             </p>
@@ -111,7 +111,7 @@ export function Footer() {
 
         {/* Bottom Section */}
         <p className="mt-8 border-t border-zinc-200 pt-6 text-center text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-500">
-          © {new Date().getFullYear()} AI-Based Student Job Placement Prediction System. Built with CatBoost and Next.js for educational and career guidance purposes.
+          © {new Date().getFullYear()} AI-Based Student Job Placement Prediction System. Built with Random Forest and Next.js for educational and career guidance purposes.
         </p>
       </div>
     </footer>

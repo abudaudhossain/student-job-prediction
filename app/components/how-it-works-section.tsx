@@ -17,7 +17,7 @@ export function HowItWorksSection() {
 
         <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300 sm:text-base">
           Your profile flows through a three-layer system: a Next.js web app, a Python
-          prediction API, and a CatBoost classifier trained on 50,000 synthetic student
+          prediction API, and a Random Forest classifier trained on 50,000 synthetic student
           records with 22 employability features.
         </p>
       </div>
@@ -70,11 +70,11 @@ export function HowItWorksSection() {
           </span>
           <div>
             <p className="font-medium text-zinc-900 dark:text-zinc-100">
-              CatBoost model prediction
+              Random Forest model prediction
             </p>
             <p className="mt-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              CatBoost—the best-performing of five evaluated models (83.0% accuracy)—
-              analyzes your employability signals and predicts your placement outcome.
+              A trained Random Forest ensemble analyzes your employability signals and
+              predicts your placement outcome with strong accuracy on the synthetic dataset.
             </p>
           </div>
         </li>

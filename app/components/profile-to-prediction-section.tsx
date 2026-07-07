@@ -18,7 +18,7 @@ function formatCount(n: number): string {
 export function ProfileToPredictionSection() {
   const [stats, setStats] = useState<StatsResponse | null>({
     datasetRows: 50000,
-    modelAccuracyPercent: 83,
+    modelAccuracyPercent: 83.1,
     featureCount: 22,
   });
 
@@ -57,8 +57,8 @@ export function ProfileToPredictionSection() {
         <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300 sm:text-base">
           Provide your academic background, technical skills, soft skills, and placement
           preparation details to receive a personalized job placement prediction. The
-          production CatBoost model was selected after comparing five classifiers and
-          achieves 83.0% accuracy on the synthetic training dataset.
+          production Random Forest model was selected after comparing five classifiers and
+          achieves 83.1% accuracy on the synthetic training dataset.
         </p>
 
         <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300 sm:text-base">
@@ -81,8 +81,8 @@ export function ProfileToPredictionSection() {
             Model accuracy
           </p>
           <p className="mt-2 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
-            CatBoost accuracy on the 50,000-record synthetic dataset (selected over
-            Logistic Regression, Random Forest, XGBoost, and Decision Tree).
+            Random Forest accuracy on the 50,000-record synthetic dataset (selected over
+            Logistic Regression, XGBoost, CatBoost, and Decision Tree).
           </p>
         </div>
 

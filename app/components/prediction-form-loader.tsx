@@ -34,7 +34,7 @@ export function PredictionFormLoader() {
         Predicting placement outcome
       </p>
       <p className="mt-1.5 max-w-[18rem] text-center text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
-        Sending your profile to the Python API and running the CatBoost model…
+        Sending your profile to the Python API and running the Random Forest model…
       </p>
       <div className="mt-5 h-1.5 w-44 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
         <div className="h-full w-full animate-pulse bg-linear-to-r from-blue-500 via-indigo-500 to-blue-600 opacity-90" />

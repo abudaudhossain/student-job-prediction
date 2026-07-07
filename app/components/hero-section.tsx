@@ -7,7 +7,7 @@ import { OpenPredictionModalButton } from "./open-prediction-modal-button";
 const subtitle = "Using Machine Learning";
 const title = "AI-Based Student Job Placement Prediction";
 const shortDescription =
-  "Predict whether you are likely to be placed in a job based on academic performance, technical skills, soft skills, practical experience, and placement preparation—powered by a CatBoost model trained on 50,000 synthetic student profiles.";
+  "Predict whether you are likely to be placed in a job based on academic performance, technical skills, soft skills, practical experience, and placement preparation—powered by a Random Forest model trained on 50,000 synthetic student profiles.";
 
 const slides = [
   {

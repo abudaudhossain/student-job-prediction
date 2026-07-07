@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "AI-Based Student Job Placement Prediction System",
   description:
-    "Predict student job placement outcomes using machine learning. CatBoost model trained on 50,000 synthetic student records with 22 employability features.",
+    "Predict student job placement outcomes using machine learning. Random Forest model trained on 50,000 synthetic student records with 22 employability features.",
 };
 
 export default function RootLayout({
