@@ -249,8 +249,8 @@ const assessmentFields: (keyof FormState)[] = [
 ];
 
 const DEFAULT_PREDICT_API_URL =
-  "http://localhost:8000/predict";
-// "https://student-job-predition-server.onrender.com/predict";
+  // "http://localhost:8000/predict";
+"https://student-job-predition-server.onrender.com/predict";
 
 function predictApiUrl(): string {
   const fromEnv = process.env.NEXT_PUBLIC_PREDICT_API_URL?.trim();
