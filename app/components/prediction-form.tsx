@@ -72,7 +72,18 @@ const LAST_STEP = STEPS.length - 1;
 const inputClassName =
   "mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-zinc-700 dark:bg-zinc-800 dark:focus:ring-blue-900";
 
+const inputErrorClassName =
+  "border-red-500 focus:border-red-500 focus:ring-red-200 dark:border-red-500 dark:focus:ring-red-900";
+
 const labelClassName = "text-sm font-medium text-zinc-700 dark:text-zinc-200";
+
+const fieldErrorClassName = "mt-1 text-xs leading-5 text-red-600 dark:text-red-400";
+
+type FieldErrors = Partial<Record<keyof FormState, string>>;
+
+function inputClass(hasError: boolean) {
+  return `${inputClassName}${hasError ? ` ${inputErrorClassName}` : ""}`;
+}
 
 function RequiredMark() {
   return (
@@ -89,10 +100,12 @@ function RequiredMark() {
 function FormLabel({
   text,
   children,
+  error,
   className = labelClassName,
 }: {
   text: string;
   children: ReactNode;
+  error?: string;
   className?: string;
 }) {
   return (
@@ -102,6 +115,11 @@ function FormLabel({
         <RequiredMark />
       </span>
       {children}
+      {error ? (
+        <p className={fieldErrorClassName} role="alert">
+          {error}
+        </p>
+      ) : null}
     </label>
   );
 }
@@ -157,14 +175,16 @@ function SkillScoreSelect({
   value,
   onChange,
   thresholds = SKILL_SCORE_LABEL_THRESHOLDS,
+  hasError = false,
 }: {
   value: string;
   onChange: (value: string) => void;
   thresholds?: readonly SkillScoreThreshold[];
+  hasError?: boolean;
 }) {
   return (
     <select
-      className={inputClassName}
+      className={inputClass(hasError)}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       required
@@ -179,42 +199,115 @@ function SkillScoreSelect({
   );
 }
 
-function validateRequiredFields(
-  form: FormState,
-  keys: (keyof FormState)[],
-  message: string,
-): string | null {
-  for (const key of keys) {
-    if (!form[key].trim()) {
-      return message;
-    }
+const skillSelectFields = new Set<keyof FormState>([
+  "programming_skill_score",
+  "problem_solving_score",
+  "database_skill_score",
+  "learning_consistency_score",
+  "communication_skill_score",
+  "teamwork_score",
+  "leadership_score",
+  "extracurricular_score",
+  "presentation_skill_score",
+  "aptitude_test_score",
+  "mock_interview_score",
+]);
+
+function validateNonNegativeCount(value: string, label: string): string | null {
+  if (!value.trim()) return `${label} is required.`;
+  const n = Number(value);
+  if (!Number.isFinite(n)) return `${label} must be a valid number.`;
+  if (!Number.isInteger(n) || n < 0) {
+    return `${label} must be a whole number of 0 or greater.`;
   }
   return null;
 }
 
-function validateContestScore(form: FormState): string | null {
-  const platform = form.coding_contest_platform.trim();
-  const ratingRaw = form.coding_contest_rating.trim();
+function validateField(key: keyof FormState, form: FormState): string | null {
+  const value = form[key].trim();
 
-  if (!platform || !ratingRaw) {
-    return "Please complete all technical skill fields.";
+  switch (key) {
+    case "cgpa": {
+      if (!value) return "CGPA is required.";
+      const n = Number(value);
+      if (!Number.isFinite(n)) return "CGPA must be a valid number.";
+      if (n < 0 || n > 4) return "CGPA must be between 0 and 4.";
+      return null;
+    }
+    case "department":
+      if (!value) return "Please select a department.";
+      return null;
+    case "coding_contest_platform":
+      if (!value) return "Please select a coding contest platform.";
+      if (!(value in contestScoreRules)) {
+        return "Please select a valid coding contest platform.";
+      }
+      return null;
+    case "coding_contest_rating": {
+      const platform = form.coding_contest_platform.trim();
+      if (!value) return "Coding contest score is required.";
+      if (!platform) return "Select a platform before entering a score.";
+      const score = Number(value);
+      if (!Number.isFinite(score)) {
+        return "Coding contest score must be a valid number.";
+      }
+      if (platform in contestScoreRules) {
+        const { min, max } = contestScoreRules[platform as ContestPlatform];
+        if (score < min || score > max) {
+          return `${platform} score must be between ${min} and ${max}.`;
+        }
+      }
+      return null;
+    }
+    case "resume_quality_score": {
+      if (!value) return "Resume quality score is required.";
+      const n = Number(value);
+      if (!Number.isFinite(n)) return "Resume quality score must be a valid number.";
+      if (n < 0 || n > 100) return "Resume quality score must be between 0 and 100.";
+      return null;
+    }
+    case "internships_count":
+      return validateNonNegativeCount(value, "Internships count");
+    case "hackathons_participated":
+      return validateNonNegativeCount(value, "Hackathons participated");
+    case "freelance_experience":
+      return validateNonNegativeCount(value, "Freelance experience");
+    case "certifications_count":
+      return validateNonNegativeCount(value, "Certifications count");
+    case "projects_count":
+      return validateNonNegativeCount(value, "Projects count");
+    case "github_repos":
+      return validateNonNegativeCount(value, "Open source GitHub repos");
+    default:
+      if (skillSelectFields.has(key)) {
+        if (!value) return "Please select a skill level.";
+      }
+      return null;
   }
+}
 
-  if (!(platform in contestScoreRules)) {
-    return "Please select a valid coding contest platform.";
+function getFieldsForStep(step: number): (keyof FormState)[] {
+  switch (step) {
+    case 0:
+      return academicFields;
+    case 1:
+      return technicalFields;
+    case 2:
+      return experienceFields;
+    case 3:
+      return assessmentFields;
+    default:
+      return [];
   }
+}
 
-  const score = Number(ratingRaw);
-  if (!Number.isFinite(score)) {
-    return "Coding contest score must be a valid number.";
+function validateStep(step: number, form: FormState): FieldErrors {
+  const errors: FieldErrors = {};
+  for (const key of getFieldsForStep(step)) {
+    const err = validateField(key, form);
+    if (err) errors[key] = err;
   }
-
-  const { min, max } = contestScoreRules[platform as ContestPlatform];
-  if (score < min || score > max) {
-    return `${platform} score must be between ${min} and ${max}.`;
-  }
-
-  return null;
+  return errors;
 }
 
 const academicFields: (keyof FormState)[] = ["cgpa", "department"];
@@ -417,45 +510,13 @@ function PredictionResult({
   );
 }
 
-function stepValidators(step: number, form: FormState): string | null {
-  switch (step) {
-    case 0:
-      return validateRequiredFields(
-        form,
-        academicFields,
-        "Please complete all academic fields.",
-      );
-    case 1:
-      return (
-        validateRequiredFields(
-          form,
-          technicalFields,
-          "Please complete all technical skill fields.",
-        ) ?? validateContestScore(form)
-      );
-    case 2:
-      return validateRequiredFields(
-        form,
-        experienceFields,
-        "Please complete all experience fields.",
-      );
-    case 3:
-      return validateRequiredFields(
-        form,
-        assessmentFields,
-        "Please complete all soft skills & assessment fields.",
-      );
-    default:
-      return null;
-  }
-}
-
 export function PredictionFormModal() {
   const { open, closeModal } = usePredictionModal();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormState>(initialForm);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [result, setResult] = useState<PredictionResponse | null>(null);
   const stepRef = useRef(step);
   stepRef.current = step;
@@ -478,6 +539,7 @@ export function PredictionFormModal() {
       setForm(initialForm);
       setResult(null);
       setError("");
+      setFieldErrors({});
     }
     return () => {
       document.body.style.overflow = "";
@@ -489,9 +551,10 @@ export function PredictionFormModal() {
     if (stepRef.current !== LAST_STEP) return;
 
     for (let i = 0; i <= LAST_STEP; i++) {
-      const err = stepValidators(i, form);
-      if (err) {
-        setError(err);
+      const errors = validateStep(i, form);
+      if (Object.keys(errors).length > 0) {
+        setFieldErrors(errors);
+        setError("");
         setStep(i);
         return;
       }
@@ -499,6 +562,7 @@ export function PredictionFormModal() {
 
     setLoading(true);
     setError("");
+    setFieldErrors({});
     setResult(null);
 
     try {
@@ -554,11 +618,12 @@ export function PredictionFormModal() {
 
   function goNext() {
     setError("");
-    const err = stepValidators(step, form);
-    if (err) {
-      setError(err);
+    const errors = validateStep(step, form);
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
+    setFieldErrors({});
     if (step < LAST_STEP) {
       setStep((s) => s + 1);
     }
@@ -566,14 +631,40 @@ export function PredictionFormModal() {
 
   function goBack() {
     setError("");
+    setFieldErrors({});
     setStep((s) => Math.max(0, s - 1));
+  }
+
+  function clearFieldError(key: keyof FormState) {
+    setFieldErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
   }
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
+    clearFieldError(key);
+  }
+
+  function validateFieldOnBlur(key: keyof FormState) {
+    const err = validateField(key, form);
+    setFieldErrors((prev) => {
+      if (!err) {
+        if (!prev[key]) return prev;
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      }
+      return { ...prev, [key]: err };
+    });
   }
 
   function updateContestPlatform(platform: string) {
+    clearFieldError("coding_contest_platform");
+    clearFieldError("coding_contest_rating");
     setForm((prev) => {
       const next = { ...prev, coding_contest_platform: platform };
       if (!(platform in contestScoreRules)) {
@@ -607,6 +698,7 @@ export function PredictionFormModal() {
     setStep(0);
     setResult(null);
     setError("");
+    setFieldErrors({});
   }
 
   return (
@@ -756,9 +848,9 @@ export function PredictionFormModal() {
                     Academic details
                   </h3>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <FormLabel text="CGPA (0–4)">
+                    <FormLabel text="CGPA (0–4)" error={fieldErrors.cgpa}>
                       <input
-                        className={inputClassName}
+                        className={inputClass(Boolean(fieldErrors.cgpa))}
                         type="number"
                         step="0.01"
                         min={0}
@@ -766,14 +858,16 @@ export function PredictionFormModal() {
                         placeholder="e.g. 3.75"
                         value={form.cgpa}
                         onChange={(e) => updateField("cgpa", e.target.value)}
+                        onBlur={() => validateFieldOnBlur("cgpa")}
                         required
                       />
                     </FormLabel>
-                    <FormLabel text="Department">
+                    <FormLabel text="Department" error={fieldErrors.department}>
                       <select
-                        className={inputClassName}
+                        className={inputClass(Boolean(fieldErrors.department))}
                         value={form.department}
                         onChange={(e) => updateField("department", e.target.value)}
+                        onBlur={() => validateFieldOnBlur("department")}
                         required
                       >
                         <option value="">Select department</option>
@@ -794,39 +888,59 @@ export function PredictionFormModal() {
                     Technical skills
                   </h3>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <FormLabel text="Programming Skill">
+                    <FormLabel
+                      text="Programming Skill"
+                      error={fieldErrors.programming_skill_score}
+                    >
                       <SkillScoreSelect
                         value={form.programming_skill_score}
                         onChange={(value) =>
                           updateField("programming_skill_score", value)
                         }
+                        hasError={Boolean(fieldErrors.programming_skill_score)}
                       />
                     </FormLabel>
-                    <FormLabel text="Problem Solving Skill">
+                    <FormLabel
+                      text="Problem Solving Skill"
+                      error={fieldErrors.problem_solving_score}
+                    >
                       <SkillScoreSelect
                         value={form.problem_solving_score}
                         onChange={(value) => updateField("problem_solving_score", value)}
+                        hasError={Boolean(fieldErrors.problem_solving_score)}
                       />
                     </FormLabel>
-                    <FormLabel text="Database Skill">
+                    <FormLabel
+                      text="Database Skill"
+                      error={fieldErrors.database_skill_score}
+                    >
                       <SkillScoreSelect
                         value={form.database_skill_score}
                         onChange={(value) => updateField("database_skill_score", value)}
+                        hasError={Boolean(fieldErrors.database_skill_score)}
                       />
                     </FormLabel>
-                    <FormLabel text="Learning Consistency">
+                    <FormLabel
+                      text="Learning Consistency"
+                      error={fieldErrors.learning_consistency_score}
+                    >
                       <SkillScoreSelect
                         value={form.learning_consistency_score}
                         onChange={(value) =>
                           updateField("learning_consistency_score", value)
                         }
+                        hasError={Boolean(fieldErrors.learning_consistency_score)}
                       />
                     </FormLabel>
-                    <FormLabel text="Coding Contest Platform">
+                    <FormLabel
+                      text="Coding Contest Platform"
+                      error={fieldErrors.coding_contest_platform}
+                    >
                       <select
-                        className={inputClassName}
+                        className={inputClass(Boolean(fieldErrors.coding_contest_platform))}
                         value={form.coding_contest_platform}
                         onChange={(e) => updateContestPlatform(e.target.value)}
+                        onBlur={() => validateFieldOnBlur("coding_contest_platform")}
                         required
                       >
                         <option value="">Select platform</option>
@@ -837,9 +951,12 @@ export function PredictionFormModal() {
                         ))}
                       </select>
                     </FormLabel>
-                    <FormLabel text="Coding Contest Score / Rating">
+                    <FormLabel
+                      text="Coding Contest Score / Rating"
+                      error={fieldErrors.coding_contest_rating}
+                    >
                       <input
-                        className={inputClassName}
+                        className={inputClass(Boolean(fieldErrors.coding_contest_rating))}
                         type="number"
                         min={selectedContestRule?.min ?? 0}
                         max={selectedContestRule?.max}
@@ -851,18 +968,21 @@ export function PredictionFormModal() {
                         onChange={(e) =>
                           updateField("coding_contest_rating", e.target.value)
                         }
+                        onBlur={() => validateFieldOnBlur("coding_contest_rating")}
                         required
                         disabled={!form.coding_contest_platform}
                         aria-describedby="contest-score-hint"
                       />
-                      <p
-                        id="contest-score-hint"
-                        className="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400"
-                      >
-                        {selectedContestRule
-                          ? `Allowed range for ${form.coding_contest_platform}: ${selectedContestRule.min} to ${selectedContestRule.max}.`
-                          : "Choose a coding contest platform to enter a valid score."}
-                      </p>
+                      {!fieldErrors.coding_contest_rating ? (
+                        <p
+                          id="contest-score-hint"
+                          className="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400"
+                        >
+                          {selectedContestRule
+                            ? `Allowed range for ${form.coding_contest_platform}: ${selectedContestRule.min} to ${selectedContestRule.max}.`
+                            : "Choose a coding contest platform to enter a valid score."}
+                        </p>
+                      ) : null}
                     </FormLabel>
 
                   </div>
@@ -875,9 +995,12 @@ export function PredictionFormModal() {
                     Experience &amp; projects
                   </h3>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <FormLabel text="Internships Count">
+                    <FormLabel
+                      text="Internships Count"
+                      error={fieldErrors.internships_count}
+                    >
                       <input
-                        className={inputClassName}
+                        className={inputClass(Boolean(fieldErrors.internships_count))}
                         type="number"
                         min={0}
                         placeholder="e.g. 1"
@@ -885,12 +1008,16 @@ export function PredictionFormModal() {
                         onChange={(e) =>
                           updateField("internships_count", e.target.value)
                         }
+                        onBlur={() => validateFieldOnBlur("internships_count")}
                         required
                       />
                     </FormLabel>
-                    <FormLabel text="Hackathons Participated">
+                    <FormLabel
+                      text="Hackathons Participated"
+                      error={fieldErrors.hackathons_participated}
+                    >
                       <input
-                        className={inputClassName}
+                        className={inputClass(Boolean(fieldErrors.hackathons_participated))}
                         type="number"
                         min={0}
                         placeholder="e.g. 0"
@@ -898,12 +1025,16 @@ export function PredictionFormModal() {
                         onChange={(e) =>
                           updateField("hackathons_participated", e.target.value)
                         }
+                        onBlur={() => validateFieldOnBlur("hackathons_participated")}
                         required
                       />
                     </FormLabel>
-                    <FormLabel text="Freelance Experience">
+                    <FormLabel
+                      text="Freelance Experience"
+                      error={fieldErrors.freelance_experience}
+                    >
                       <input
-                        className={inputClassName}
+                        className={inputClass(Boolean(fieldErrors.freelance_experience))}
                         type="number"
                         min={0}
                         placeholder="e.g. 0"
@@ -911,12 +1042,16 @@ export function PredictionFormModal() {
                         onChange={(e) =>
                           updateField("freelance_experience", e.target.value)
                         }
+                        onBlur={() => validateFieldOnBlur("freelance_experience")}
                         required
                       />
                     </FormLabel>
-                    <FormLabel text="Certifications Count">
+                    <FormLabel
+                      text="Certifications Count"
+                      error={fieldErrors.certifications_count}
+                    >
                       <input
-                        className={inputClassName}
+                        className={inputClass(Boolean(fieldErrors.certifications_count))}
                         type="number"
                         min={0}
                         placeholder="e.g. 10"
@@ -924,12 +1059,13 @@ export function PredictionFormModal() {
                         onChange={(e) =>
                           updateField("certifications_count", e.target.value)
                         }
+                        onBlur={() => validateFieldOnBlur("certifications_count")}
                         required
                       />
                     </FormLabel>
-                    <FormLabel text="Projects Count">
+                    <FormLabel text="Projects Count" error={fieldErrors.projects_count}>
                       <input
-                        className={inputClassName}
+                        className={inputClass(Boolean(fieldErrors.projects_count))}
                         type="number"
                         min={0}
                         placeholder="e.g. 5"
@@ -937,27 +1073,34 @@ export function PredictionFormModal() {
                         onChange={(e) =>
                           updateField("projects_count", e.target.value)
                         }
+                        onBlur={() => validateFieldOnBlur("projects_count")}
                         required
                       />
                     </FormLabel>
-                    <FormLabel text="Open Source GitHub Repos">
+                    <FormLabel
+                      text="Open Source GitHub Repos"
+                      error={fieldErrors.github_repos}
+                    >
                       <input
-                        className={inputClassName}
+                        className={inputClass(Boolean(fieldErrors.github_repos))}
                         type="number"
                         min={0}
                         placeholder="e.g. 3"
                         value={form.github_repos}
                         onChange={(e) => updateField("github_repos", e.target.value)}
+                        onBlur={() => validateFieldOnBlur("github_repos")}
                         required
                         aria-describedby="github-repos-hint"
                       />
-                      <p
-                        id="github-repos-hint"
-                        className="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400"
-                      >
-                        How many open-source repositories you have on GitHub (your
-                        own projects or contributions).
-                      </p>
+                      {!fieldErrors.github_repos ? (
+                        <p
+                          id="github-repos-hint"
+                          className="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400"
+                        >
+                          How many open-source repositories you have on GitHub (your
+                          own projects or contributions).
+                        </p>
+                      ) : null}
                     </FormLabel>
                   </div>
                 </section>
@@ -969,60 +1112,85 @@ export function PredictionFormModal() {
                     Soft skills &amp; assessment
                   </h3>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <FormLabel text="Communication Skill">
+                    <FormLabel
+                      text="Communication Skill"
+                      error={fieldErrors.communication_skill_score}
+                    >
                       <SkillScoreSelect
                         value={form.communication_skill_score}
                         onChange={(value) =>
                           updateField("communication_skill_score", value)
                         }
+                        hasError={Boolean(fieldErrors.communication_skill_score)}
                       />
                     </FormLabel>
-                    <FormLabel text="Teamwork Skill">
+                    <FormLabel text="Teamwork Skill" error={fieldErrors.teamwork_score}>
                       <SkillScoreSelect
                         value={form.teamwork_score}
                         onChange={(value) => updateField("teamwork_score", value)}
                         thresholds={SOFT_SKILL_SCORE_LABEL_THRESHOLDS}
+                        hasError={Boolean(fieldErrors.teamwork_score)}
                       />
                     </FormLabel>
-                    <FormLabel text="Leadership Skill">
+                    <FormLabel
+                      text="Leadership Skill"
+                      error={fieldErrors.leadership_score}
+                    >
                       <SkillScoreSelect
                         value={form.leadership_score}
                         onChange={(value) => updateField("leadership_score", value)}
                         thresholds={SOFT_SKILL_SCORE_LABEL_THRESHOLDS}
+                        hasError={Boolean(fieldErrors.leadership_score)}
                       />
                     </FormLabel>
-                    <FormLabel text="Extracurricular Skill">
+                    <FormLabel
+                      text="Extracurricular Skill"
+                      error={fieldErrors.extracurricular_score}
+                    >
                       <SkillScoreSelect
                         value={form.extracurricular_score}
                         onChange={(value) =>
                           updateField("extracurricular_score", value)
                         }
                         thresholds={SOFT_SKILL_SCORE_LABEL_THRESHOLDS}
+                        hasError={Boolean(fieldErrors.extracurricular_score)}
                       />
                     </FormLabel>
-                    <FormLabel text="Presentation Skill">
+                    <FormLabel
+                      text="Presentation Skill"
+                      error={fieldErrors.presentation_skill_score}
+                    >
                       <SkillScoreSelect
                         value={form.presentation_skill_score}
                         onChange={(value) =>
                           updateField("presentation_skill_score", value)
                         }
+                        hasError={Boolean(fieldErrors.presentation_skill_score)}
                       />
                     </FormLabel>
-                    <FormLabel text="Aptitude Test">
+                    <FormLabel text="Aptitude Test" error={fieldErrors.aptitude_test_score}>
                       <SkillScoreSelect
                         value={form.aptitude_test_score}
                         onChange={(value) => updateField("aptitude_test_score", value)}
+                        hasError={Boolean(fieldErrors.aptitude_test_score)}
                       />
                     </FormLabel>
-                    <FormLabel text="Mock Interview">
+                    <FormLabel
+                      text="Mock Interview"
+                      error={fieldErrors.mock_interview_score}
+                    >
                       <SkillScoreSelect
                         value={form.mock_interview_score}
                         onChange={(value) => updateField("mock_interview_score", value)}
+                        hasError={Boolean(fieldErrors.mock_interview_score)}
                       />
                     </FormLabel>
-                    <FormLabel text="Resume Quality Score (0-100)">
+                    <FormLabel
+                      text="Resume Quality Score (0-100)"
+                      error={fieldErrors.resume_quality_score}
+                    >
                       <input
-                        className={inputClassName}
+                        className={inputClass(Boolean(fieldErrors.resume_quality_score))}
                         type="number"
                         min={0}
                         max={100}
@@ -1031,6 +1199,7 @@ export function PredictionFormModal() {
                         onChange={(e) =>
                           updateField("resume_quality_score", e.target.value)
                         }
+                        onBlur={() => validateFieldOnBlur("resume_quality_score")}
                         required
                       />
                     </FormLabel>
